@@ -340,12 +340,13 @@ display( void )
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     CheckError(); // May report a harmless GL_INVALID_OPERATION with GLEW on the first frame
 
-// Set the view matrix.  To start with this just moves the camera backwards.  You'll need to
-// add appropriate rotations.
 
+    // Set the view matrix. The camera will be rotated according to the respective mouse
+    // commands and translated by view dist
+    mat4 rotSideways = RotateZ(camRotSidewaysDeg);
+    mat4 rotUp = RotateX(camRotUpAndOverDeg);
 
-
-    view = Translate(0.0, 0.0, -viewDist);
+    view = Translate(0.0, 0.0, -viewDist) * rotUp * rotSideways;
 
 
     SceneObject lightObj1 = sceneObjs[1]; 
