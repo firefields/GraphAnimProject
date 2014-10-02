@@ -314,10 +314,14 @@ void drawMesh(SceneObject sceneObj) {
     // Set the projection matrix for the shaders
     glUniformMatrix4fv( projectionU, 1, GL_TRUE, projection );
 
-    // Set the model matrix - this should combine translation, rotation and scaling based on what's
-    // in the sceneObj structure (see near the top of the program).
+    // Set the model matrix 
+    float xAngle = sceneObj.angles[0];
+    float yAngle = sceneObj.angles[1];
+    float zAngle = sceneObj.angles[2];
+    mat4 rotateMat = RotateX(-xAngle) * RotateY(yAngle) *  RotateZ(-zAngle);
+    // Negative angles here make the object rotate in the same direction as the sample videos.
 
-    mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale);
+    mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat;// * Translate(-sceneObj.loc);
 
 
     // Set the model-view matrix for the shaders
@@ -342,11 +346,8 @@ display( void )
 
 
     // Set the view matrix. The camera will be rotated according to the respective mouse
-    // commands and translated by view dist
-    mat4 rotSideways = RotateZ(camRotSidewaysDeg);
-    mat4 rotUp = RotateX(camRotUpAndOverDeg);
-
-    view = Translate(0.0, 0.0, -viewDist) * rotUp * rotSideways;
+    // commands and translated backwards by view dist
+    view = Translate(0.0, 0.0, -viewDist) * RotateX(camRotUpAndOverDeg) *  RotateY(camRotSidewaysDeg);
 
 
     SceneObject lightObj1 = sceneObjs[1]; 
