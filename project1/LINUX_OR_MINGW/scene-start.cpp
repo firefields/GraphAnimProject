@@ -25,7 +25,7 @@ GLuint shaderProgram; // The number identifying the GLSL shader program
 GLuint vPosition, vNormal, vTexCoord; // IDs for vshader input vars (from glGetAttribLocation)
 GLuint projectionU, modelViewU; // IDs for uniform variables (from glGetUniformLocation)
 
-static float viewDist = 1.5; // Distance from the camera to the centre of the scene
+static float viewDist = 15.0; // Distance from the camera to the centre of the scene
 static float camRotSidewaysDeg=0; // rotates the camera sideways around the centre
 static float camRotUpAndOverDeg=20; // rotates the camera up and over the centre.
 
@@ -244,6 +244,28 @@ static void addObject(int id) {
   glutPostRedisplay();
 }
 
+//------Remove the current object from the scene (currently will always be last created)
+
+static void removeObject(void ) 
+{
+    // Do not remove the ground or the lights
+    if( nObjects > 3)
+    {
+	//int temp = currObject; // Start at the current object
+	//for( int i = temp; i < nObjects; i++)
+	//{
+	  //If changing current object gets implemented then the sceneObs struct needs to have all it's 
+	  //entries lowered by 1 after the one being removed. 
+	//}
+	nObjects--;
+	glutPostRedisplay();
+    }
+    else
+    {
+	printf("Cannot remove the ground or the lights\n"); 
+    }
+}
+
 // ------ The init function
 
 void init( void )
@@ -258,7 +280,7 @@ void init( void )
     glGenTextures(numTextures, textureIDs); CheckError(); // Allocate texture objects
 
     // Load shaders and use the resulting shader program
-    shaderProgram = InitShader( "vStartCopy.glsl", "fStartCopy.glsl" );
+    shaderProgram = InitShader( "vStart.glsl", "fStart.glsl" );
 
     glUseProgram( shaderProgram ); CheckError();
 
@@ -284,6 +306,14 @@ void init( void )
     sceneObjs[1].scale = 0.1;
     sceneObjs[1].texId = 0; // Plain texture
     sceneObjs[1].brightness = 0.2; // The light's brightness is 5 times this (below).
+
+    // Object 2 is the second light.
+    addObject(55); // Sphere for the second light
+    sceneObjs[2].loc = vec4(3.0, 4.0, 5.0, 1.0);
+    sceneObjs[2].scale = 0.1;
+    sceneObjs[2].texId = 0; // Plain texture
+    sceneObjs[2].brightness = 0.2; // The light's brightness is 5 times this (below).
+
 
     addObject(rand() % numMeshes); // A test mesh
 
@@ -318,10 +348,10 @@ void drawMesh(SceneObject sceneObj) {
     float xAngle = sceneObj.angles[0];
     float yAngle = sceneObj.angles[1];
     float zAngle = sceneObj.angles[2];
-    mat4 rotateMat = RotateX(-xAngle) * RotateY(yAngle) *  RotateZ(-zAngle);
+    mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle);
     // Negative angles here make the object rotate in the same direction as the sample videos.
 
-    mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat;// * Translate(-sceneObj.loc);
+    mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat;
 
 
     // Set the model-view matrix for the shaders
@@ -346,19 +376,23 @@ display( void )
 
 
     // Set the view matrix. The camera will be rotated according to the respective mouse
-    // commands and translated backwards by view dist
+    // commands and translated backwards by viewDist
     view = Translate(0.0, 0.0, -viewDist) * RotateX(camRotUpAndOverDeg) *  RotateY(camRotSidewaysDeg);
 
 
     SceneObject lightObj1 = sceneObjs[1]; 
-    vec4 lightPosition = view * lightObj1.loc ;
+    SceneObject lightObj2 = sceneObjs[2];
+    vec4 lightPosition1 = view * lightObj1.loc;
+    vec4 lightPosition2 = view * lightObj2.loc;
 
-    glUniform4fv( glGetUniformLocation(shaderProgram, "LightPosition"), 1, lightPosition); CheckError();
+    glUniform4fv( glGetUniformLocation(shaderProgram, "LightPosition1"), 1, lightPosition1); CheckError();
+    glUniform4fv( glGetUniformLocation(shaderProgram, "LightPosition2"), 1, lightPosition2); CheckError();
+
 
     for(int i=0; i<nObjects; i++) {
         SceneObject so = sceneObjs[i];
-
-        vec3 rgb = so.rgb * lightObj1.rgb * so.brightness * lightObj1.brightness * 2.0;
+	vec3 totalLight = lightObj1.rgb * lightObj1.brightness * lightObj2.rgb * lightObj2.brightness;
+        vec3 rgb = so.rgb * so.brightness * totalLight * 2.0;
         glUniform3fv( glGetUniformLocation(shaderProgram, "AmbientProduct"), 1, so.ambient * rgb ); CheckError();
         glUniform3fv( glGetUniformLocation(shaderProgram, "DiffuseProduct"), 1, so.diffuse * rgb );
         glUniform3fv( glGetUniformLocation(shaderProgram, "SpecularProduct"), 1, so.specular * rgb );
@@ -404,6 +438,7 @@ static void adjustBlueBrightness(vec2 bl_br)
 
   static void lightMenu(int id) {
     deactivateTool();
+    //Light 1
     if(id == 70) {
 	    toolObj = 1;
         setToolCallbacks(adjustLocXZ, camRotZ(),
@@ -411,6 +446,17 @@ static void adjustBlueBrightness(vec2 bl_br)
 
     } else if(id>=71 && id<=74) {
 	    toolObj = 1;
+        setToolCallbacks(adjustRedGreen, mat2(1.0, 0, 0, 1.0),
+                         adjustBlueBrightness, mat2(1.0, 0, 0, 1.0) );
+    }
+    //Light 2
+    else if(id == 80) {
+	    toolObj = 2;
+        setToolCallbacks(adjustLocXZ, camRotZ(),
+                         adjustBrightnessY, mat2( 1.0, 0.0, 0.0, 10.0) );
+
+    } else if(id>=81 && id<=84) {
+	    toolObj = 2;
         setToolCallbacks(adjustRedGreen, mat2(1.0, 0, 0, 1.0),
                          adjustBlueBrightness, mat2(1.0, 0, 0, 1.0) );
     }
@@ -448,16 +494,15 @@ static void materialMenu(int id) {
   if(currObject<0) return;
   if(id==10) {
 	 toolObj = currObject;
-     setToolCallbacks(adjustRedGreen, mat2(1, 0, 0, 1),
-                      adjustBlueBrightness, mat2(1, 0, 0, 1) );
+     setToolCallbacks(adjustRedGreen, mat2(1.0, 0, 0, 1.0),
+                      adjustBlueBrightness, mat2(1.0, 0, 0, 1.0) );
   }
   else if(id==20)
   {
     toolObj = currObject;
-    setToolCallbacks(adjustAmbDif,mat2(1,0,0,1),
-		     adjustSpecShine, mat2(1,0,0,100) );
-  }
-  // You'll need to fill in the remaining menu items here.					    
+    setToolCallbacks(adjustAmbDif,mat2(1.0,0,0,1.0),
+		     adjustSpecShine, mat2(1.0,0,0,10.0) );
+  }				    
 					  
   else { printf("Error in materialMenu\n"); }
 }
@@ -482,6 +527,10 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400),
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     }
+    if(id == 100)
+    {
+	removeObject();
+    }
     if(id == 99) exit(0);
 }
 
@@ -504,6 +553,8 @@ static void makeMenu() {
   glutCreateMenu(mainmenu);
   glutAddMenuEntry("Rotate/Move Camera",50);
   glutAddSubMenu("Add object", objectId);
+  // Implement an option to remove an object
+  glutAddMenuEntry("Remove object", 100);
   glutAddMenuEntry("Position/Scale", 41);
   glutAddMenuEntry("Rotation/Texture Scale", 55);
   glutAddSubMenu("Material", materialMenuId);
@@ -512,6 +563,8 @@ static void makeMenu() {
   glutAddSubMenu("Lights",lightMenuId);
   glutAddMenuEntry("EXIT", 99);
   glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+
 }
 
 
@@ -545,24 +598,24 @@ void reshape( int width, int height ) {
       
     GLfloat nearDist = 0.2;
     float ratio = (float)width/(float)height;
+    float mod = 0.05;
     // If the window is higher than it is wide, then we need 
     // to modify the height components of the Frustrum
     if( ratio < 1.0) 
     //larger height
     {
-	projection = Frustum(-nearDist, nearDist,
-	                    -nearDist / ratio, nearDist / ratio,
+	projection = Frustum(-nearDist * mod, nearDist * mod,
+	                    -nearDist * mod / ratio, nearDist * mod / ratio,
 		            nearDist, 100.0);
     }
     else 
     //square or larger width - note if it is square than ratio is 1.0 
     //so it makes no difference to the projection
     {
-	projection = Frustum(-nearDist * ratio, nearDist * ratio,
-	                    -nearDist, nearDist,
+	projection = Frustum(-nearDist * ratio * mod, nearDist * ratio * mod,
+	                    -nearDist * mod, nearDist * mod,
 		            nearDist, 100.0);
     }
-
 }
 
 void timer(int unused)
