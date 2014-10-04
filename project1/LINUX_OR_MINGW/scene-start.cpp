@@ -540,27 +540,28 @@ void reshape( int width, int height ) {
 
     windowWidth = width;
     windowHeight = height;
-    
 
     glViewport(0, 0, width, height);
-
-
-
-    // You'll need to modify this so that the view is similar to that in the sample solution.
-    // In particular: 
-    //   - the view should include "closer" visible objects (slightly tricky)
-    //   - when the width is less than the height, the view should adjust so that the same part
-    //     of the scene is visible across the width of the window.
-    
-    GLfloat nearDist = 0.02;
+      
+    GLfloat nearDist = 0.2;
     float ratio = (float)width/(float)height;
-    projection = Frustum(-nearDist*ratio, nearDist*ratio,
+    // If the window is higher than it is wide, then we need 
+    // to modify the height components of the Frustrum
+    if( ratio < 1.0) 
+    //larger height
+    {
+	projection = Frustum(-nearDist, nearDist,
+	                    -nearDist / ratio, nearDist / ratio,
+		            nearDist, 100.0);
+    }
+    else 
+    //square or larger width - note if it is square than ratio is 1.0 
+    //so it makes no difference to the projection
+    {
+	projection = Frustum(-nearDist * ratio, nearDist * ratio,
 	                    -nearDist, nearDist,
 		            nearDist, 100.0);
-
-    //(float)height/(float)width, nearDist*(float)height/(float)width
-    //float fov = atan(float(height) / nearDist) * 180 / 3.1416;
-    //projection = Perspective(fov,ratio,nearDist,100.0);
+    }
 
 }
 
