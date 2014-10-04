@@ -258,7 +258,7 @@ void init( void )
     glGenTextures(numTextures, textureIDs); CheckError(); // Allocate texture objects
 
     // Load shaders and use the resulting shader program
-    shaderProgram = InitShader( "vStart.glsl", "fStart.glsl" );
+    shaderProgram = InitShader( "vStartCopy.glsl", "fStartCopy.glsl" );
 
     glUseProgram( shaderProgram ); CheckError();
 
@@ -437,6 +437,12 @@ static int createArrayMenu(int size, const char menuEntries[][128], void(*menuFn
     return menuId;
 }
 
+static void adjustAmbDif(vec2 ad) 
+  { sceneObjs[toolObj].ambient+=ad[0]; sceneObjs[toolObj].specular+=ad[1]; }
+
+static void adjustSpecShine(vec2 ss) 
+  { sceneObjs[toolObj].diffuse+=ss[0]; sceneObjs[toolObj].shine+=ss[1]; }
+
 static void materialMenu(int id) {
   deactivateTool();
   if(currObject<0) return;
@@ -444,6 +450,12 @@ static void materialMenu(int id) {
 	 toolObj = currObject;
      setToolCallbacks(adjustRedGreen, mat2(1, 0, 0, 1),
                       adjustBlueBrightness, mat2(1, 0, 0, 1) );
+  }
+  else if(id==20)
+  {
+    toolObj = currObject;
+    setToolCallbacks(adjustAmbDif,mat2(1,0,0,1),
+		     adjustSpecShine, mat2(1,0,0,100) );
   }
   // You'll need to fill in the remaining menu items here.					    
 					  
@@ -478,7 +490,7 @@ static void makeMenu() {
 
   int materialMenuId = glutCreateMenu(materialMenu);
   glutAddMenuEntry("R/G/B/All",10);
-  glutAddMenuEntry("UNIMPLEMENTED: Ambient/Diffuse/Specular/Shine",20);
+  glutAddMenuEntry("Ambient/Diffuse/Specular/Shine",20);
 
   int texMenuId = createArrayMenu(numTextures, textureMenuEntries, texMenu);
   int groundMenuId = createArrayMenu(numTextures, textureMenuEntries, groundMenu);
@@ -528,6 +540,7 @@ void reshape( int width, int height ) {
 
     windowWidth = width;
     windowHeight = height;
+    
 
     glViewport(0, 0, width, height);
 
@@ -538,11 +551,16 @@ void reshape( int width, int height ) {
     //   - the view should include "closer" visible objects (slightly tricky)
     //   - when the width is less than the height, the view should adjust so that the same part
     //     of the scene is visible across the width of the window.
+    
+    GLfloat nearDist = 0.02;
+    float ratio = (float)width/(float)height;
+    projection = Frustum(-nearDist*ratio, nearDist*ratio,
+	                    -nearDist, nearDist,
+		            nearDist, 100.0);
 
-    GLfloat nearDist = 0.2;
-    projection = Frustum(-nearDist*(float)width/(float)height, nearDist*(float)width/(float)height,
-                         -nearDist, nearDist,
-                         nearDist, 100.0);
+    //(float)height/(float)width, nearDist*(float)height/(float)width
+    //float fov = atan(float(height) / nearDist) * 180 / 3.1416;
+    //projection = Perspective(fov,ratio,nearDist,100.0);
 
 }
 
