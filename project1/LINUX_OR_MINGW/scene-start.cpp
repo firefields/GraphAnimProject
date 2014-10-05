@@ -349,7 +349,6 @@ void drawMesh(SceneObject sceneObj) {
     float yAngle = sceneObj.angles[1];
     float zAngle = sceneObj.angles[2];
     mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle);
-    // Negative angles here make the object rotate in the same direction as the sample videos.
 
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat;
 
