@@ -615,14 +615,44 @@ static void makeMenu() {
 void
 keyboard( unsigned char key, int x, int y )
 {
-    switch ( key ) {
+    switch ( key ) {     
+    case 011:
+        nextObject();
+    case 140:
+        previousObject();
     case 033:
         exit( EXIT_SUCCESS );
         break;
     }
 }
 
+// ------ Scrolls through the currently selected object forwards and backwards
+static void nextObject(void)
+{
+    if(currObject == nObjects)
+    {
+        currObject = 1;
+    }
+    else
+    {
+        currObject++;
+    }
+}
+
+static void previousObject(void)
+{
+    if(currObject == 1 || currObject == 0)
+    {
+        currObject = nObjects;
+    }
+    else
+    {
+        currObject--;
+    }
+}
+
 //----------------------------------------------------------------------------
+
 
 
 void idle( void ) {
