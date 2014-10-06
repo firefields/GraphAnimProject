@@ -244,6 +244,33 @@ static void addObject(int id) {
   glutPostRedisplay();
 }
 
+//------Duplicate the current object
+
+static void duplicateObject(void )
+{
+    // Do not attempt to duplicate the ground or the lights. Only 2 lights have been implemented.
+    if( nObjects < 4 )
+    { 
+	printf("Cannot duplicate the ground or the lights\n"); 
+    }
+    // Do not duplicate an object if the maximum number of objects has been reached
+    else if ( nObjects < maxObjects)
+    {
+	sceneObjs[nObjects] = sceneObjs[currObject];
+	// Set the new object to be the current object
+	toolObj = currObject = nObjects++;
+	setToolCallbacks(adjustLocXZ, camRotZ(),
+			 adjustScaleY, mat2(0.05, 0, 0, 10.0) );
+	glutPostRedisplay();
+
+    }
+    else
+    {
+	printf("The maximum number of objects has already been added\n"); 
+    }
+
+}
+
 //------Remove the current object from the scene (currently will always be last created)
 
 static void removeObject(void ) 
@@ -251,12 +278,13 @@ static void removeObject(void )
     // Do not remove the ground or the lights
     if( nObjects > 3)
     {
-	//int temp = currObject; // Start at the current object
-	//for( int i = temp; i < nObjects; i++)
-	//{
-	  //If changing current object gets implemented then the sceneObs struct needs to have all it's 
-	  //entries lowered by 1 after the one being removed. 
-	//}
+	int temp = currObject; // Start at the current object. 
+	// If temp = nObjects (i.e. removing the last object) then this for loop will
+	// not run.
+	for( int i = temp; i < nObjects; i++)
+	{
+	    sceneObjs[i] = sceneObjs[i+1]; // Move the object from the next object position down 
+	}
 	nObjects--;
 	glutPostRedisplay();
     }
@@ -506,6 +534,19 @@ static void materialMenu(int id) {
   else { printf("Error in materialMenu\n"); }
 }
 
+static void objectOptionsMenu(int id)
+{
+    deactivateTool();
+    if(id == 100)
+    {
+	removeObject();
+    }
+    if(id == 110)
+    {
+	duplicateObject();
+    }
+}
+
 static void adjustAngleYX(vec2 angle_yx) 
   {  sceneObjs[currObject].angles[1]+=angle_yx[0]; sceneObjs[currObject].angles[0]+=angle_yx[1]; }
 
@@ -516,7 +557,7 @@ static void adjustAngleZTexscale(vec2 az_ts)
 static void mainmenu(int id) {
     deactivateTool();
     if(id == 41 && currObject>=0) {
-	    toolObj=currObject;
+	toolObj=currObject;
         setToolCallbacks(adjustLocXZ, camRotZ(),
                          adjustScaleY, mat2(0.05, 0, 0, 10) );
     }
@@ -525,10 +566,6 @@ static void mainmenu(int id) {
     if(id == 55 && currObject>=0) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400),
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
-    }
-    if(id == 100)
-    {
-	removeObject();
     }
     if(id == 99) exit(0);
 }
@@ -549,11 +586,17 @@ static void makeMenu() {
   glutAddMenuEntry("Move Light 2",80);
   glutAddMenuEntry("R/G/B/All Light 2",81);
 
-  glutCreateMenu(mainmenu);
-  glutAddMenuEntry("Rotate/Move Camera",50);
+  // Create a new submenu that contains all the object options    
+  int objectOptionsMenuId = glutCreateMenu(objectOptionsMenu);
   glutAddSubMenu("Add object", objectId);
   // Implement an option to remove an object
   glutAddMenuEntry("Remove object", 100);
+  // Implement an option to duplicate an object
+  glutAddMenuEntry("Duplicate object", 110);
+
+  glutCreateMenu(mainmenu);
+  glutAddMenuEntry("Rotate/Move Camera",50);
+  glutAddSubMenu("Object Options",objectOptionsMenuId);
   glutAddMenuEntry("Position/Scale", 41);
   glutAddMenuEntry("Rotation/Texture Scale", 55);
   glutAddSubMenu("Material", materialMenuId);
