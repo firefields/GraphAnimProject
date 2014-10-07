@@ -73,6 +73,8 @@ int nObjects=0; // How many objects are currenly in the scene.
 int currObject=-1; // The current object
 int toolObj = -1;  // The object currently being modified
 
+int MODE_SELECT = 0 //Used to store whether or not Object Select mode is active
+
 
 
 
@@ -174,7 +176,11 @@ static void mouseClickOrScroll(int button, int state, int x, int y) {
     else if(button==GLUT_LEFT_BUTTON && state == GLUT_UP) deactivateTool();
     else if(button==GLUT_MIDDLE_BUTTON && state==GLUT_DOWN) { activateTool(button); }
     else if(button==GLUT_MIDDLE_BUTTON && state==GLUT_UP) deactivateTool();
-
+    
+    //Implements allowing the scroll wheel to change selected object if select mode is active
+    else if(button==3 && MODE_SELECT=1) {nextObject()};
+    else if(button==4 && MODE_SELECT=1) {previousObject()};
+    
     else if (button == 3) { // scroll up
         viewDist = (viewDist < 0.0 ? viewDist : viewDist*0.8) - 0.05;
     }
@@ -537,13 +543,14 @@ static void materialMenu(int id) {
 static void objectOptionsMenu(int id)
 {
     deactivateTool();
-    if(id == 100)
-    {
-	removeObject();
-    }
-    if(id == 110)
-    {
-	duplicateObject();
+    switch(id){
+    case 100 :
+	   removeObject();
+    case 110 :  
+	   duplicateObject();
+    case 120:
+        if(MODE_SELECT == 0)    {MODE_SELECT = 1};      
+        else                    {MODE_SELECT = 0};
     }
 }
 
@@ -593,6 +600,9 @@ static void makeMenu() {
   glutAddMenuEntry("Remove object", 100);
   // Implement an option to duplicate an object
   glutAddMenuEntry("Duplicate object", 110);
+  // Implement an option to select current object
+  glutAddMenuEntry("Select Object",120)
+
 
   glutCreateMenu(mainmenu);
   glutAddMenuEntry("Rotate/Move Camera",50);
@@ -627,6 +637,7 @@ keyboard( unsigned char key, int x, int y )
 }
 
 // ------ Scrolls through the currently selected object forwards and backwards
+
 static void nextObject(void)
 {
     if(currObject == nObjects)
