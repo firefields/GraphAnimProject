@@ -686,9 +686,9 @@ void reshape( int width, int height ) {
  
     glViewport(0, 0, width, height); 
        
-    GLfloat nearDist = 0.2; 
+    GLfloat nearDist = 0.02; //0.2, 0.02
     float ratio = (float)width/(float)height; 
-    float mod = 0.05; 
+    float mod = 0.05; //0.05
     // If the window is higher than it is wide, then we need  
     // to modify the height components of the Frustrum 
     if( ratio < 1.0)  
