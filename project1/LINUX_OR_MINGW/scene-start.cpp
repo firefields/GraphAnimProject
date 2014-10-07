@@ -249,20 +249,22 @@ static void addObject(int id) {
 static void duplicateObject(void )
 {
     // Do not attempt to duplicate the ground or the lights. Only 2 lights have been implemented.
-    if( nObjects < 4 )
+    if( currObject < 3 )
     { 
 	printf("Cannot duplicate the ground or the lights\n"); 
     }
     // Do not duplicate an object if the maximum number of objects has been reached
     else if ( nObjects < maxObjects)
     {
+	// Set the new object
 	sceneObjs[nObjects] = sceneObjs[currObject];
+	// Offset the new object so it is not on top of the old one
+	sceneObjs[nObjects].loc[0]+=0.5;
 	// Set the new object to be the current object
 	toolObj = currObject = nObjects++;
 	setToolCallbacks(adjustLocXZ, camRotZ(),
 			 adjustScaleY, mat2(0.05, 0, 0, 10.0) );
 	glutPostRedisplay();
-
     }
     else
     {
