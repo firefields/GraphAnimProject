@@ -37,7 +37,6 @@ void main()
     
     // Determine the distance modifier. Here use a linear drop off over the distance.
     distModifier1 = 1.0 / length( Lvec1);
-    distModifier2 = 1.0 / length( Lvec2); // Drops off 10 times slower over distance 
 
     gl_Position = Projection * ModelView * vPosition;
     texCoord = vTexCoord;
