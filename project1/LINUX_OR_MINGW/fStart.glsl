@@ -42,21 +42,18 @@ main()
     float Ks2 = pow( max(dot(N, H2), 0.0), Shininess );
 
     
-    // Here take the average of the specular + white, thus skewing
-    // the specular towards white as it is 1.0 and specular < 1
-    vec3  specular1 =( vec3(1.0,1.0,1.0) + (Ks1 * SpecularProduct) ) / 2.0;
-    vec3  specular2 =( vec3(1.0,1.0,1.0) + (Ks2 * SpecularProduct) ) / 2.0;
+    specular1 = vec3(0.0, 0.0, 0.0);
+    specular2 = vec3(0.0, 0.0, 0.0);
 
-    
-    // Discard the specular highlight if the light is behind
-    if( dot(L1, N) < 0.0 ) 
+    if(dot(L1, N) > 0.0)
     {
-	specular1 = vec3(0.0, 0.0, 0.0);
-    } 
-    if( dot(L2, N) < 0.0 ) 
+        vec3  specular1 =( vec3(1.0,1.0,1.0) + (Ks1 * SpecularProduct) ) / 2.0;
+    }
+    if(dot(L2, N) > 0.0)
     {
-	specular2 = vec3(0.0, 0.0, 0.0);
-    } 
+        vec3  specular2 =( vec3(1.0,1.0,1.0) + (Ks2 * SpecularProduct) ) / 2.0;
+    }
+
 
 
     // globalAmbient is independent of distance from the light source
