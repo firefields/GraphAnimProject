@@ -181,10 +181,6 @@ static void mouseClickOrScroll(int button, int state, int x, int y) {
     else if(button==GLUT_MIDDLE_BUTTON && state==GLUT_DOWN) { activateTool(button); }
     else if(button==GLUT_MIDDLE_BUTTON && state==GLUT_UP) deactivateTool();
     
-    //Implements allowing the scroll wheel to change selected object if select mode is active
-    else if(button==3 && MODE_SELECT=1) {nextObject()};
-    else if(button==4 && MODE_SELECT=1) {previousObject()};
-    
     else if (button == 3) { // scroll up
         viewDist = (viewDist < 0.0 ? viewDist : viewDist*0.8) - 0.05;
     }
