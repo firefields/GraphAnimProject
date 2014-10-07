@@ -73,7 +73,7 @@ int nObjects=0; // How many objects are currenly in the scene.
 int currObject=-1; // The current object
 int toolObj = -1;  // The object currently being modified
 
-int MODE_SELECT = 0 //Used to store whether or not Object Select mode is active
+
 
 
 
@@ -550,9 +550,6 @@ static void objectOptionsMenu(int id)
 	   removeObject();
     case 110 :  
 	   duplicateObject();
-    case 120:
-        if(MODE_SELECT == 0)    {MODE_SELECT = 1};      
-        else                    {MODE_SELECT = 0};
     }
 }
 
@@ -602,8 +599,7 @@ static void makeMenu() {
   glutAddMenuEntry("Remove object", 100);
   // Implement an option to duplicate an object
   glutAddMenuEntry("Duplicate object", 110);
-  // Implement an option to select current object
-  glutAddMenuEntry("Select Object",120)
+
 
 
   glutCreateMenu(mainmenu);
@@ -619,23 +615,6 @@ static void makeMenu() {
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 
-}
-
-
-//----------------------------------------------------------------------------
-
-void
-keyboard( unsigned char key, int x, int y )
-{
-    switch ( key ) {     
-    case 011:
-        nextObject();
-    case 140:
-        previousObject();
-    case 033:
-        exit( EXIT_SUCCESS );
-        break;
-    }
 }
 
 // ------ Scrolls through the currently selected object forwards and backwards
@@ -663,6 +642,24 @@ static void previousObject(void)
         currObject--;
     }
 }
+
+//----------------------------------------------------------------------------
+
+void
+keyboard( unsigned char key, int x, int y )
+{
+    switch ( key ) {     
+    case 011:
+        nextObject();
+    case 140:
+        previousObject();
+    case 033:
+        exit( EXIT_SUCCESS );
+        break;
+    }
+}
+
+
 
 //----------------------------------------------------------------------------
 
