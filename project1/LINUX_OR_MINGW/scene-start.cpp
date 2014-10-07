@@ -623,11 +623,12 @@ static void nextObject(void)
 {
     if(currObject == nObjects)
     {
-        currObject = 1;
+        toolObj = currObject = 1;
     }
     else
     {
         currObject++;
+        toolObj++;
     }
 }
 
@@ -635,11 +636,12 @@ static void previousObject(void)
 {
     if(currObject == 1 || currObject == 0)
     {
-        currObject = nObjects;
+        toolObj = currObject = nObjects;
     }
     else
     {
         currObject--;
+        toolObj--;
     }
 }
 
