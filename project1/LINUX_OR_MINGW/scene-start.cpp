@@ -73,7 +73,7 @@ int nObjects=0; // How many objects are currenly in the scene.
 int currObject=-1; // The current object
 int toolObj = -1;  // The object currently being modified
 
-int MODE_SELECT = 0 //Used to store whether or not Object Select mode is active
+int MODE_SELECT = 0; //Used to store whether or not Object Select mode is active
 
 
 
@@ -644,11 +644,12 @@ static void nextObject(void)
 {
     if(currObject == nObjects)
     {
-        currObject = 1;
+        toolObj = currObject = 1;
     }
     else
     {
         currObject++;
+	toolObj++;
     }
 }
 
@@ -656,11 +657,12 @@ static void previousObject(void)
 {
     if(currObject == 1 || currObject == 0)
     {
-        currObject = nObjects;
+        toolObj = currObject = nObjects;
     }
     else
     {
         currObject--;
+	toolObj--;
     }
 }
 
