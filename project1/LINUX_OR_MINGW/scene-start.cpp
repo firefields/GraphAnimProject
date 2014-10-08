@@ -231,7 +231,7 @@ static void nextObject(void)
  
 static void previousObject(void) 
 { 
-    if(currObject == 1 || currObject == 0) 
+    if(currObject == 1) 
     {
 	currObject = nObjects - 1; 
 	toolObj = currObject;
