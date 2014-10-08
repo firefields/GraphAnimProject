@@ -69,7 +69,7 @@ main()
     vec3 globalAmbient = vec3(0.1, 0.1, 0.1);
 
     vec4 finalColor;
-    finalColor.rgb =  globalAmbient  + ambient + ( diffuse1 + specular1) * distModifier1 + diffuse2 + specular2;
+    finalColor.rgb =  globalAmbient  + ( ambient + diffuse1 + specular1) * distModifier1 + diffuse2 + specular2;
     finalColor.a = 1.0;
 
     fColor = finalColor * texture2D( texture, texCoord * 2.0 );
