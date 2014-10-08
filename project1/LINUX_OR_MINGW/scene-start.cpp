@@ -210,41 +210,42 @@ static void doRotate() {
                      adjustcamSideUp, mat2(400, 0, 0,-90) ); 
 } 
 
-// ------ Scrolls through the currently selected object forwards and backwards 
- 
-static void nextObject(void) 
+// ------   Scrolls through the currently selected object forwards and backwards. Both 
+//          functions avoid the Ground object but include the Light objects. 
+
+static void nextObject(void)                    // Iterates to the next object in the array
 { 
-    if(currObject == nObjects - 1) 
+    if(currObject == nObjects - 1)  // Rolls back to start of list if at the end of array            
     { 
         currObject = 1; 
-	toolObj = currObject;
+	   toolObj = currObject;
     } 
     else 
     { 
         currObject++; 
-	toolObj++; 
+	   toolObj++; 
     } 
     setToolCallbacks(adjustLocXZ, camRotZ(), 
 		     adjustScaleY, mat2(0.05, 0, 0, 10.0) ); 
 
 } 
- 
-static void previousObject(void) 
+
+static void previousObject(void)                // Iterates to the previous object in the array
 { 
-    if(currObject == 1) 
+    if(currObject == 1)  // Jumps to end of array if previous object is ground
     {
-	currObject = nObjects - 1; 
-	toolObj = currObject;
+	   currObject = nObjects - 1; 
+	   toolObj = currObject;
     } 
     else 
     { 
         currObject--; 
-	toolObj--; 
+	   toolObj--; 
     }
     setToolCallbacks(adjustLocXZ, camRotZ(), 
 		     adjustScaleY, mat2(0.05, 0, 0, 10.0) ); 
 
-} 
+}
 				    
 //------Add an object to the scene 
  
@@ -655,10 +656,10 @@ void
 keyboard( unsigned char key, int x, int y ) 
 { 
     switch ( key ) {      
-    case 011: 
+    case 011:                       //TAB Key
         nextObject();
 	break;
-    case 0140: 
+    case 0140:                      //` Key
         previousObject(); 
 	break;
     case 033: 
