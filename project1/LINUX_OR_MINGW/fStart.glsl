@@ -66,7 +66,7 @@ main()
 
 
     // globalAmbient is independent of distance from the light source
-    vec3 globalAmbient = vec3(0.2, 0.2, 0.2);
+    vec3 globalAmbient = vec3(0.5, 0.5, 0.5);
 
     vec4 finalColor;
     finalColor.rgb =  globalAmbient  + ambient + ( diffuse1 + specular1) * distModifier1 + diffuse2 + specular2;
