@@ -64,6 +64,10 @@ main()
         vec3  specular2 =Ks2 * SpecularProduct;
     }
 
+    //Set the specular component to tend towards white
+    specular1 = vec3(1.0,1.0,1.0) * specular1;
+    specular2 = vec3(1.0,1.0,1.0) * specular2;
+
 
     // globalAmbient is independent of distance from the light source
     vec3 globalAmbient = vec3(0.1, 0.1, 0.1);

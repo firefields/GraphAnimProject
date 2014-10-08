@@ -35,8 +35,8 @@ void main()
     // Transform vertex normal into eye coordinates (assumes scaling is uniform across dimensions)
     fN = (ModelView*vec4(vNormal, 0.0)).xyz;
     
-    // Determine the distance modifier. Here use a linear drop off over the distance.
-    distModifier1 = 1.0 / length( Lvec1);
+    // Determine the distance modifier. Uses inverse proportionality as would be found in the real world.
+    distModifier1 = 1.0 / (1.0 + pow(length(Lvec1),2));
 
     gl_Position = Projection * ModelView * vPosition;
     texCoord = vTexCoord;
