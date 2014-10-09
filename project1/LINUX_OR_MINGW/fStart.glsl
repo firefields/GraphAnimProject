@@ -33,9 +33,9 @@ main()
     vec3 ambient = AmbientProduct;
     if(ambient < 0 )
     {
-        ambient=0;
+        ambient=vec3(0.0,0.0,0.0);
     }
-    
+
     float Kd1 = max( dot(L1, N), 0.0 );
     vec3  diffuse1 = Kd1*DiffuseProduct;
 
