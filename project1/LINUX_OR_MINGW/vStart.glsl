@@ -36,7 +36,7 @@ void main()
     fN = (ModelView*vec4(vNormal, 0.0)).xyz;
     
     // Determine the distance modifier. Uses inverse proportionality as would be found in the real world.
-    distModifier1 = 1.0 / (1.0 + ( 0.5 * pow(length(Lvec1),2) );
+    distModifier1 = 1.0 / (1.0 + ( 1.0 * pow(length(Lvec1),2));
 
     gl_Position = Projection * ModelView * vPosition;
     texCoord = vTexCoord;
