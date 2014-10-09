@@ -31,7 +31,7 @@ main()
 
     // Compute terms in the illumination equation
     vec3 ambient = AmbientProduct;
-    if(ambient < 0 )
+    if(ambient < vec3(0.0,0.0,0.0)
     {
         ambient=vec3(0.0,0.0,0.0);
     }
