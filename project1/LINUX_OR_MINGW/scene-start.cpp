@@ -15,7 +15,8 @@ GLint windowHeight=640, windowWidth=960;
  
 // gnatidread.cpp is the CITS3003 "Graphics n Animation Tool Interface & Data Reader" code 
 // This file contains parts of the code that you shouldn't need to modify (but, you can). 
-#include "gnatidread.h" 
+#include "gnatidread.h"
+#include "gnatidread2.h" 
  
 using namespace std;    // Import the C++ standard functions (e.g., min)  
  
