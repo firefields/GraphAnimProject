@@ -603,7 +603,7 @@ static void mainmenu(int id) {
         doRotate(); 
     if(id == 55 && currObject>=0) { 
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400), 
-                         adjustAngleZTexscale, mat2(400, 0, 0, 15) ); 
+                         adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     } 
     if(id == 99) exit(0); 
 } 

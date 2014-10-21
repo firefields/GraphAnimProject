@@ -16,7 +16,7 @@ uniform mat4 Projection;
 uniform vec4 LightPosition1;
 uniform vec4 LightPosition2;
 uniform float Shininess;
-
+uniform float texScale;
 
 void
 main()
@@ -36,7 +36,7 @@ main()
     vec3  diffuse1 = Kd1*DiffuseProduct;
 
     float Kd2 = max( dot(L2, N), 0.0 );
-    vec3  diffuse2 = Kd2*DiffuseProduct;
+    vec3  diffuse2 = Kd2*DiffuseProduct; 
 
     float Ks1 = pow( max(dot(N, H1), 0.0), Shininess );
     float Ks2 = pow( max(dot(N, H2), 0.0), Shininess );
@@ -45,10 +45,10 @@ main()
     vec3 specular1 = vec3(0.0, 0.0, 0.0);
     vec3 specular2 = vec3(0.0, 0.0, 0.0);
 
-    /*
+     /*
     if(dot(L1, N) > 0.0)
     {
-        vec3  specular1 =( vec3(1.0,1.0,1.0) + (Ks1 * SpecularProduct) ) / 2.0;
+	vec3  specular1 =( vec3(1.0,1.0,1.0) + (Ks1 * SpecularProduct) ) / 2.0;
     }
     if(dot(L2, N) > 0.0)
     {
@@ -77,5 +77,5 @@ main()
     finalColor.rgb =  globalAmbient  + ( ambient + diffuse1 + specular1) * distModifier1 + diffuse2 + specular2;
     finalColor.a = 1.0;
 
-    fColor = finalColor * texture2D( texture, texCoord * 2.0 );
+    fColor = finalColor * texture2D( texture, texCoord * 2.0 * texScale ); 
 }
