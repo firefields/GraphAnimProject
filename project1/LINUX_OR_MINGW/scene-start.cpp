@@ -42,6 +42,7 @@ int numDisplayCalls = 0; // Used to calculate the number of frames per second
 // Uses the type aiMesh from ../../assimp--3.0.1270/include/assimp/mesh.h 
 //                      (numMeshes is defined in gnatidread.h) 
 aiMesh* meshes[numMeshes]; // For each mesh we have a pointer to the mesh to draw 
+const aiScene* scenes[numMeshes];
 GLuint vaoIDs[numMeshes]; // and a corresponding VAO ID from glGenVertexArrays 
  
 // -----Textures--------------------------------------------------------- 
@@ -118,7 +119,9 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
     if(meshes[meshNumber] != NULL) 
         return; // Already loaded 
  
-    aiMesh* mesh = loadMesh(meshNumber); 
+    const aiScene* scene = loadScene(meshNumber);
+    scenes[meshNumber] = scene;
+    aiMesh* mesh = scene->mMeshes[0];
     meshes[meshNumber] = mesh; 
  
     glBindVertexArray( vaoIDs[meshNumber] ); 
@@ -162,6 +165,25 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
                            BUFFER_OFFSET(sizeof(float)*6*mesh->mNumVertices) ); 
     glEnableVertexAttribArray( vNormal ); 
     CheckError(); 
+
+    // Get boneIDs and boneWeights for each vertex from the imported mesh data
+    GLint boneIDs[mesh->mNumVertices][4];
+    GLfloat boneWeights[mesh->mNumVertices][4];
+    getBonesAffectingEachVertex(mesh, boneIDs, boneWeights);
+
+    GLuint buffers[2];
+    glGenBuffers( 2, buffers );  // Add two vertex buffer objects
+    
+    glBindBuffer( GL_ARRAY_BUFFER, buffers[0] ); CheckError();
+    glBufferData( GL_ARRAY_BUFFER, sizeof(int)*4*mesh->mNumVertices, boneIDs, GL_STATIC_DRAW ); CheckError();
+    glVertexAttribIPointer(vBoneIDs, 4, GL_INT, 0, BUFFER_OFFSET(0)); CheckError();
+    glEnableVertexAttribArray(vBoneIDs);     CheckError();
+    
+    glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(float)*4*mesh->mNumVertices, boneWeights, GL_STATIC_DRAW );
+    glVertexAttribPointer(vBoneWeights, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vBoneWeights);    
+    CheckError();
 } 
  
 // -------------------------------------- 
@@ -423,6 +445,15 @@ void drawMesh(SceneObject sceneObj) {
     // Set the model-view matrix for the shaders 
     glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
  
+    int nBones = meshes[sceneObj.meshId]->mNumBones;
+    if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
+
+    // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
+    //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
+    //     the start of the animation, measured in frames, like the frame numbers in Blender.)
+    mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
+    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, <POSE_TIME>, boneTransforms);
+    glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
  
     // Activate the VAO for a mesh, loading if needed. 
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
