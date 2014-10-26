@@ -30,11 +30,13 @@ void main()
     }
     */
 
+
     mat4 boneTransform = boneWeights[0] * boneTransforms[boneIDs[0]] + 
 			 boneWeights[1] * boneTransforms[boneIDs[1]] + 
 			 boneWeights[2] * boneTransforms[boneIDs[2]] + 
 	    	 	 boneWeights[3] * boneTransforms[boneIDs[3]];
-    
+
+
     //Apply boneTransform to Vertex Position and Vertex Normal
     vec4 vPositionMod = vPosition * boneTransform;
     vec4 vNormalMod = vec4(vNormal, 0.0) * boneTransform;
