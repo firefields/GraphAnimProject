@@ -386,7 +386,7 @@ void init( void )
     //Added initialisation for bones in animation models
     vBoneIDs        = glGetAttribLocation(shaderProgram, "vBoneIDs");
     vBoneWeights    = glGetAttribLocation(shaderProgram, "vBoneWeights");
-    uBoneTransforms = glGetUniformLocation(shaderProgram, "uBoneTransforms");
+    vBoneTransforms = glGetUniformLocation(shaderProgram, "uBoneTransforms");
 
     // Objects 0, and 1 are the ground and the first light. 
     addObject(0); // Square for the ground 

@@ -5,7 +5,7 @@ in  vec3 vNormal;
 in  vec2 vTexCoord;
 in  vec4 boneIDs;
 in  vec4 boneWeights;
-uniform mat4 boneTransformation[64];
+uniform mat4 boneTransforms[64];
 
 out vec2 texCoord;
 out vec3 fN;
