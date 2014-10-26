@@ -23,8 +23,8 @@ using namespace std;    // Import the C++ standard functions (e.g., min)
  
 // IDs for the GLSL program and GLSL variables. 
 GLuint shaderProgram; // The number identifying the GLSL shader program 
-GLuint vPosition, vNormal, vTexCoord; // IDs for vshader input vars (from glGetAttribLocation) 
-GLuint projectionU, modelViewU; // IDs for uniform variables (from glGetUniformLocation) 
+GLuint vPosition, vNormal, vTexCoord, vBoneIDs, vBoneWeights; // IDs for vshader input vars (from glGetAttribLocation) 
+GLuint projectionU, modelViewU, uBoneTransforms; // IDs for uniform variables (from glGetUniformLocation) 
  
 static float viewDist = 15.0; // Distance from the camera to the centre of the scene 
 static float camRotSidewaysDeg=0; // rotates the camera sideways around the centre 
@@ -382,7 +382,12 @@ void init( void )
  
     projectionU = glGetUniformLocation(shaderProgram, "Projection"); 
     modelViewU = glGetUniformLocation(shaderProgram, "ModelView"); 
- 
+    
+    //Added initialisation for bones in animation models
+    vBoneIDs        = glGetAttribLocation(shaderProgram, "vBoneIDs");
+    vBoneWeights    = glGetAttribLocation(shaderProgram, "vBoneWeights");
+    uBoneTransforms = glGetUniformLocation(shaderProgram, "uBoneTransforms");
+
     // Objects 0, and 1 are the ground and the first light. 
     addObject(0); // Square for the ground 
     sceneObjs[0].loc = vec4(0.0, 0.0, 0.0, 1.0); 
