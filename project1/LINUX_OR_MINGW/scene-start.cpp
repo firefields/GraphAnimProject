@@ -457,7 +457,7 @@ void drawMesh(SceneObject sceneObj) {
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
     //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
-    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, <POSE_TIME>, boneTransforms);
+    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, 0.0 , boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
  
     // Activate the VAO for a mesh, loading if needed. 
