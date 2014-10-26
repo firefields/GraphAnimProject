@@ -20,6 +20,19 @@ uniform vec4 LightPosition2;
 
 void main()
 {
+    
+    //Calculate Bone Transform
+    mat4 boneTransform = 0;
+    for (int i = 0; i <= 3 ; i++)
+    {
+        boneTransform = boneTransform + boneWeights[i]*boneTransforms[boneIDs[i]];
+    }
+    
+    //Apply boneTransform to Vertex Position and Vertex Normal
+    vPosition = vPosition * boneTransform;
+    vNormal = vNormal * boneTransform;
+
+
     // Transform vertex position into eye coordinates
     vec3 pos = (ModelView * vPosition).xyz;
 
@@ -35,6 +48,7 @@ void main()
     fE = -pos;     // Direction to the eye/camera
 
     
+
     // Transform vertex normal into eye coordinates (assumes scaling is uniform across dimensions)
     fN = (ModelView*vec4(vNormal, 0.0)).xyz;
     
