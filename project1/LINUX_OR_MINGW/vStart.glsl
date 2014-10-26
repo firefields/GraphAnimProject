@@ -5,7 +5,7 @@ in  vec3 vNormal;
 in  vec2 vTexCoord;
 in  vec4 boneIDs;
 in  vec4 boneWeights;
-uniform mat4 boneTransformation[64];
+uniform mat4 boneTransforms[64];
 
 out vec2 texCoord;
 out vec3 fN;
@@ -22,12 +22,14 @@ void main()
 {
     
     //Calculate Bone Transform
+    /*
     mat4 boneTransform = 0;
     for (int i = 0; i <= 3 ; i++)
     {
         boneTransform = boneTransform + boneWeights[i]*boneTransforms[boneIDs[i]];
     }
-    
+    */
+    mat4 boneTransform = boneWeights[0]*boneTransforms[boneIDs[0]] + boneWeights[1]*boneTransforms[boneIDs[1]] + boneWeights[2]*boneTransforms[boneIDs[2]] + boneWeights[3]*boneTransforms[boneIDs[3]]
     //Apply boneTransform to Vertex Position and Vertex Normal
     vPosition = vPosition * boneTransform;
     vNormal = vNormal * boneTransform;
