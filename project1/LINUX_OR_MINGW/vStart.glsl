@@ -29,7 +29,9 @@ void main()
         boneTransform = boneTransform + boneWeights[i]*boneTransforms[boneIDs[i]];
     }
     */
+
     mat4 boneTransform = boneWeights[0]*boneTransforms[boneIDs[0]] + boneWeights[1]*boneTransforms[boneIDs[1]] + boneWeights[2]*boneTransforms[boneIDs[2]] + boneWeights[3]*boneTransforms[boneIDs[3]]
+    
     //Apply boneTransform to Vertex Position and Vertex Normal
     vec4 vPositionMod = vPosition * boneTransform;
     vec4 vNormalMod = vec4(vNormal, 0.0) * boneTransform;
@@ -57,6 +59,6 @@ void main()
     // Determine the distance modifier. Uses inverse proportionality as would be found in the real world.
     distModifier1 = 1.0 / (1.0 + ( 1.0 * pow(length(Lvec1),2)));
 
-    gl_Position = Projection * ModelView * vPosition;
+    gl_Position = Projection * ModelView * vPositionMod;
     texCoord = vTexCoord;
 }
