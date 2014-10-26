@@ -37,6 +37,7 @@ mat4 view; // View matrix - set in the display function.
 char lab[] = "Project1"; 
 char *programName = NULL; // Set in main   
 int numDisplayCalls = 0; // Used to calculate the number of frames per second 
+int totalDisplayCalls = 0;  // Used to calculate the number of frames since start
  
 // -----Meshes---------------------------------------------------------- 
 // Uses the type aiMesh from ../../assimp--3.0.1270/include/assimp/mesh.h 
@@ -178,7 +179,7 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
     glBufferData( GL_ARRAY_BUFFER, sizeof(int)*4*mesh->mNumVertices, boneIDs, GL_STATIC_DRAW ); CheckError();
     glVertexAttribIPointer(vBoneIDs, 4, GL_INT, 0, BUFFER_OFFSET(0)); CheckError();
     glEnableVertexAttribArray(vBoneIDs);     CheckError();
-    
+  
     glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
     glBufferData( GL_ARRAY_BUFFER, sizeof(float)*4*mesh->mNumVertices, boneWeights, GL_STATIC_DRAW );
     glVertexAttribPointer(vBoneWeights, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
@@ -474,6 +475,7 @@ void
 display( void ) 
 { 
     numDisplayCalls++; 
+    totalDisplayCalls++;
  
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
     CheckError(); // May report a harmless GL_INVALID_OPERATION with GLEW on the first frame 
