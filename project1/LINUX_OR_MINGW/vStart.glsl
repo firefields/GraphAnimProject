@@ -31,12 +31,12 @@ void main()
     */
     mat4 boneTransform = boneWeights[0]*boneTransforms[boneIDs[0]] + boneWeights[1]*boneTransforms[boneIDs[1]] + boneWeights[2]*boneTransforms[boneIDs[2]] + boneWeights[3]*boneTransforms[boneIDs[3]]
     //Apply boneTransform to Vertex Position and Vertex Normal
-    vPosition = vPosition * boneTransform;
-    vNormal = vNormal * boneTransform;
+    vec4 vPositionMod = vPosition * boneTransform;
+    vec4 vNormalMod = vec4(vNormal, 0.0) * boneTransform;
 
 
     // Transform vertex position into eye coordinates
-    vec3 pos = (ModelView * vPosition).xyz;
+    vec3 pos = (ModelView * vPositionMod).xyz;
 
     // The vector to the light from the vertex    
     vec3 Lvec1 = LightPosition1.xyz - pos;
@@ -52,7 +52,7 @@ void main()
     
 
     // Transform vertex normal into eye coordinates (assumes scaling is uniform across dimensions)
-    fN = (ModelView*vec4(vNormal, 0.0)).xyz;
+    fN = (ModelView*vec4(vNormalMod)).xyz;
     
     // Determine the distance modifier. Uses inverse proportionality as would be found in the real world.
     distModifier1 = 1.0 / (1.0 + ( 1.0 * pow(length(Lvec1),2)));
