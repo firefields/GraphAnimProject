@@ -5,7 +5,7 @@ in  vec2 texCoord;  // The third coordinate is always 0.0 and is discarded
 in  vec3 fN;
 in  vec3 fL1, fL2;
 in  vec3 fE;
-in  float distModifier1, distModifier2;
+in  float distModifier1;
 
 out vec4 fColor;
 
@@ -66,8 +66,8 @@ main()
     }
 
     // Set the specular component to tend towards white
-    specular1 = vec3(1.0,1.0,1.0) * specular1;
-    specular2 = vec3(1.0,1.0,1.0) * specular2;
+    specular1 = ((vec3(1.0,1.0,1.0)+(vec3(1.0,1.0,1.0)-specular1)) * specular1);
+    specular2 = ((vec3(1.0,1.0,1.0)+(vec3(1.0,1.0,1.0)-specular2)) * specular2);
 
 
     // globalAmbient is independent of distance from the light source

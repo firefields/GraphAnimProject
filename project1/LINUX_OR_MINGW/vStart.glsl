@@ -3,12 +3,15 @@
 in  vec4 vPosition;
 in  vec3 vNormal;
 in  vec2 vTexCoord;
+in  vec4 boneIDs;
+in  vec4 boneWeights;
+uniform mat4 boneTransformation[64];
 
 out vec2 texCoord;
 out vec3 fN;
 out vec3 fE;
 out vec3 fL1, fL2;
-out float distModifier1, distModifier2;
+out float distModifier1;
 
 uniform mat4 ModelView;
 uniform mat4 Projection;
