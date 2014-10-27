@@ -68,10 +68,10 @@ typedef struct {
     float brightness; // Multiplies all colours 
     int meshId; 
     int texId;
-    float animDist;
-    float animSpeed;
-    float curDist;
-    int animDir;        //Sets direction of animation ( 1 for forwards, -1 for backwards) 
+    float animDist;	// Sets maximum distance to run
+    float animSpeed;	// Sets speed of model
+    float curDist;	// Current distance travelled by model
+    int animDir;        // Sets direction of animation ( 1 for forwards, -1 for backwards) 
     float texScale; 
 } SceneObject; 
  
@@ -82,7 +82,7 @@ int nObjects=0; // How many objects are currenly in the scene.
 int currObject=-1; // The current object 
 int toolObj = -1;  // The object currently being modified 
 
-float frameSpeedModify = 0.0;   //Modifies speed of animation dependant on frame rate
+float frameSpeedModify = 1.0;   //Modifies speed of animation dependant on frame rate
  
  
 //------------------------------------------------------------ 
@@ -308,7 +308,7 @@ static void addObject(int id) {
 
   if(id >= 56)
   {
-    sceneObjs[nObjects].animDist    = 10.0;
+    sceneObjs[nObjects].animDist    = 5.0;
     sceneObjs[nObjects].animSpeed   = 1.0;
   }
  
@@ -438,7 +438,7 @@ void init( void )
  
 //---------------------------------------------------------------------------- 
  
-void drawMesh(SceneObject sceneObj) { 
+void drawMesh(SceneObject sceneObj, int id) { 
     // Activate a texture, loading if needed. 
     loadTextureIfNotAlreadyLoaded(sceneObj.texId); 
     glActiveTexture(GL_TEXTURE0 ); 
@@ -460,22 +460,42 @@ void drawMesh(SceneObject sceneObj) {
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
     mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
-    
-    if( sceneObj.meshID >= 56)
+    if( sceneObj.meshId >= 56)
     {
-	sceneObj.loc+=
+	
+//	printf("location is %f",sceneObj.loc[0]);
+//	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + 1.0;//(sceneObj.animDist / sceneObj.animSpeed) * frameSpeedModify;
+//	printf(" now its %f\n",sceneObj.loc[0]);
+	//1]=sin(zAngle)
+	//printf("location is %f animDir is %d animDist is %f animSpeed is %f speedModify is %f\n",sceneObjs[id].loc[0],sceneObj.animDir,sceneObj.animDist,sceneObj.animSpeed,frameSpeedModify);
+	if( sceneObj.animDir > 0 && sceneObj.curDist >= sceneObj.animDist )
+	{
+	    sceneObjs[id].curDist = 0.0;
+	    sceneObjs[id].animDir = sceneObjs[id].animDir * -1;
+	}
+	/*else if( sceneObj.animDir < 0 && sceneObj.curDist <= -sceneObj.animDist )
+	{
+	    sceneObjs[id].curDist = 0.0;
+	    sceneObjs[id].animDir = 1;
+	}*/
+	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (1000.0 * frameSpeedModify);
+	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + distTravel;
+	sceneObjs[id].curDist += abs(distTravel);
+	printf("adsadas %f\n",sceneObj.curDist);
     }
+    
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
     
  
     // Set the model-view matrix for the shaders 
-    glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
+    glUniformMatrix4fv( modelViewU, 1
+    , GL_TRUE, view * model ); 
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
-    //printf("nbones = %d\n",nBones);
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
-    float animFrame =  (float)(totalDisplayCalls % 200 ) / 5.0 ;
-    printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
+    
+    float animFrame =  (float)(totalDisplayCalls % (40 * 5 )) / frameSpeedModify;
+    //printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
     
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
@@ -523,7 +543,7 @@ display( void )
         glUniform3fv( glGetUniformLocation(shaderProgram, "SpecularProduct"), 1, so.specular * rgb ); 
         glUniform1f( glGetUniformLocation(shaderProgram, "Shininess"), so.shine ); CheckError(); 
  
-        drawMesh(sceneObjs[i]); 
+        drawMesh(sceneObjs[i],i); 
  
     } 
  
@@ -774,9 +794,13 @@ void timer(int unused)
     char title[256]; 
     sprintf(title, "%s %s: %d Frames Per Second @ %d x %d", 
             lab, programName, numDisplayCalls, windowWidth, windowHeight ); 
- 
+    if( numDisplayCalls > 0)
+    {
+	frameSpeedModify = numDisplayCalls / 100.0;
+    }
+
     glutSetWindowTitle(title); 
- 
+    
     numDisplayCalls = 0; 
     glutTimerFunc(1000, timer, 1); 
 } 
