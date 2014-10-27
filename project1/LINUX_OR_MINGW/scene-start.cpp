@@ -429,6 +429,12 @@ void init( void )
  
     //addObject(rand() % numMeshes); // A test mesh 
     addObject(56); // add gingerbread man
+    sceneObjs[3].loc = vec4(0.0, 0.0, 0.0, 1.0); 
+    addObject(57); // add monkey head
+    sceneObjs[4].loc = vec4(-1.0, 0.0, 0.0, 1.0); 
+    addObject(58); // add gingerbread man circle path
+    sceneObjs[5].loc = vec4(1.0, 0.0, 1.0, 1.0); 
+
     // We need to enable the depth test to discard fragments that 
     // are behind previously drawn fragments for the same pixel. 
     glEnable( GL_DEPTH_TEST ); 
@@ -460,8 +466,8 @@ void drawMesh(SceneObject sceneObj, int id) {
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
     mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
-    // Move the ginger bread man in a circle
-    if( sceneObj.meshId == 58)
+   	
+    if( sceneObj.meshId >= 56)
     {
     	if( sceneObj.curDist >= sceneObj.animDist )
 	{
@@ -469,28 +475,19 @@ void drawMesh(SceneObject sceneObj, int id) {
 	    sceneObjs[id].animDir *= -1;
 	}
 	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] += sin(yAngle-180) * distTravel;
-	sceneObjs[id].loc[2] += cos(yAngle-180) * distTravel;
+	sceneObjs[id].loc[0] += sin(yAngle-180.0) * distTravel;
+	sceneObjs[id].loc[2] += cos(yAngle-180.0) * distTravel;
 	sceneObjs[id].curDist += abs(distTravel);
-	// Rotate the model around the y axis 
-	yAngle = sceneObjs[id].angles[1] += 0.1 * frameSpeedModify;
-	rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
-    }
-    // Move the gingerbread man or the monkey head in a straight line
-    else if( sceneObj.meshId >= 56)
-    {
-    	if( sceneObj.curDist >= sceneObj.animDist )
+	//printf("ANGLE IS %f\n",yAngle-180);
+	//printf("dist is %f and speed is %f\n",sceneObj.animDist,sceneObj.animSpeed );
+	if( sceneObj.meshId == 58)
 	{
-	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir *= -1;
+	    // Rotate the model around the y axis for guy running in circle 
+	    yAngle = sceneObjs[id].angles[1] += 0.08 * frameSpeedModify * sceneObj.animDir;
+	    rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
 	}
-	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] += sin(yAngle-180) * distTravel;
-	sceneObjs[id].loc[2] += cos(yAngle-180) * distTravel;
-	sceneObjs[id].curDist += abs(distTravel);
-	printf("ANGLE IS %f\n",yAngle-180);
     }
-    
+
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
     
  
@@ -501,7 +498,15 @@ void drawMesh(SceneObject sceneObj, int id) {
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
     
-    float animFrame =  (float)(totalDisplayCalls % (40 * (int)frameSpeedModify )) / frameSpeedModify;
+    float animFrame =  (float)(totalDisplayCalls % (40 * (int)frameSpeedModify )) / frameSpeedModify; 
+    
+    
+    //int animFPS = 30000; // FPS for animation
+    //int time = glutGet(GLUT_ELAPSED_TIME);
+    //float animFrame = (float) ( time % ( 40 / animFPS)  * animFPS );
+    // Here * by animFPS as it is equivalent to dividing by time per frame
+    //printf("animFram %f and time is %d\n",animFrame,time);
+    
     //printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
     
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
@@ -705,7 +710,7 @@ static void mainmenu(int id) {
     if(id == 60)
     {
         setToolCallbacks(adjustAnimDist, mat2(1.0,0,0,1.0),
-                            adjustAnimSpeed, mat2(1.0,0,0,1.0));
+                         adjustAnimSpeed, mat2(1.0,0,0,1.0));
     }
 
     if(id == 99) exit(0); 
