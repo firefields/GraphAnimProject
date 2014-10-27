@@ -308,7 +308,7 @@ static void addObject(int id) {
 
   if(id >= 56)
   {
-    sceneObjs[nObjects].animDist    = 5.0;
+    sceneObjs[nObjects].animDist    = 2.0;
     sceneObjs[nObjects].animSpeed   = 1.0;
   }
  
@@ -460,28 +460,35 @@ void drawMesh(SceneObject sceneObj, int id) {
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
     mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
-    if( sceneObj.meshId >= 56)
+    // Move the ginger bread man in a circle
+    if( sceneObj.meshId == 58)
     {
-	
-//	printf("location is %f",sceneObj.loc[0]);
-//	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + 1.0;//(sceneObj.animDist / sceneObj.animSpeed) * frameSpeedModify;
-//	printf(" now its %f\n",sceneObj.loc[0]);
-	//1]=sin(zAngle)
-	//printf("location is %f animDir is %d animDist is %f animSpeed is %f speedModify is %f\n",sceneObjs[id].loc[0],sceneObj.animDir,sceneObj.animDist,sceneObj.animSpeed,frameSpeedModify);
-	if( sceneObj.animDir > 0 && sceneObj.curDist >= sceneObj.animDist )
+    	if( sceneObj.curDist >= sceneObj.animDist )
 	{
 	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir = sceneObjs[id].animDir * -1;
+	    sceneObjs[id].animDir *= -1;
 	}
-	/*else if( sceneObj.animDir < 0 && sceneObj.curDist <= -sceneObj.animDist )
+	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
+	sceneObjs[id].loc[0] += sin(yAngle-180) * distTravel;
+	sceneObjs[id].loc[2] += cos(yAngle-180) * distTravel;
+	sceneObjs[id].curDist += abs(distTravel);
+	// Rotate the model around the y axis 
+	yAngle = sceneObjs[id].angles[1] += 0.1 * frameSpeedModify;
+	rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
+    }
+    // Move the gingerbread man or the monkey head in a straight line
+    else if( sceneObj.meshId >= 56)
+    {
+    	if( sceneObj.curDist >= sceneObj.animDist )
 	{
 	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir = 1;
-	}*/
-	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (1000.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + distTravel;
+	    sceneObjs[id].animDir *= -1;
+	}
+	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
+	sceneObjs[id].loc[0] += cos(yAngle-180) * distTravel;
+	sceneObjs[id].loc[2] += sin(yAngle-180) * distTravel;
 	sceneObjs[id].curDist += abs(distTravel);
-	printf("adsadas %f\n",sceneObj.curDist);
+	printf("ANGLE IS %f\n",yAngle-180);
     }
     
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
@@ -494,7 +501,7 @@ void drawMesh(SceneObject sceneObj, int id) {
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
     
-    float animFrame =  (float)(totalDisplayCalls % (40 * 5 )) / frameSpeedModify;
+    float animFrame =  (float)(totalDisplayCalls % (40 * (int)frameSpeedModify )) / frameSpeedModify;
     //printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
     
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
