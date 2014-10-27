@@ -37,8 +37,10 @@ mat4 view; // View matrix - set in the display function.
 char lab[] = "Project1"; 
 char *programName = NULL; // Set in main   
 int numDisplayCalls = 0; // Used to calculate the number of frames per second 
+
+// Used to determine the current time since start
 int totalDisplayCalls = 0;  // Used to calculate the number of frames since start
- 
+
 // -----Meshes---------------------------------------------------------- 
 // Uses the type aiMesh from ../../assimp--3.0.1270/include/assimp/mesh.h 
 //                      (numMeshes is defined in gnatidread.h) 
@@ -272,7 +274,6 @@ static void previousObject(void)                // Iterates to the previous obje
 //------Add an object to the scene 
  
 static void addObject(int id) { 
-  printf("adding object \n");
   vec2 currPos = currMouseXYworld(camRotSidewaysDeg); 
   sceneObjs[nObjects].loc[0] = currPos[0]; 
   sceneObjs[nObjects].loc[1] = 0.0; 
@@ -299,7 +300,6 @@ static void addObject(int id) {
   setToolCallbacks(adjustLocXZ, camRotZ(), 
                    adjustScaleY, mat2(0.05, 0, 0, 10.0) ); 
   glutPostRedisplay(); 
-  printf("finish adding object\n");
 } 
  
 //------Duplicate the current object 
@@ -444,9 +444,13 @@ void drawMesh(SceneObject sceneObj) {
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
     mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
- 
+    
+    if( sceneObj.meshID >= 56)
+    {
+	sceneObj.loc+=
+    }
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
- 
+    
  
     // Set the model-view matrix for the shaders 
     glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
