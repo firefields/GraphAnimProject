@@ -678,7 +678,17 @@ static void adjustAngleYX(vec2 angle_yx)
 static void adjustAngleZTexscale(vec2 az_ts)  
   {  sceneObjs[currObject].angles[2]+=az_ts[0]; sceneObjs[currObject].texScale+=az_ts[1]; } 
  
- 
+static void adjustAnimDist(vec2 ad_ad)
+{
+    sceneObjs[currObject].animDist += ad_ad[0];
+    //sceneObjs[currObject].animSpeed += ad_ad[1];  //Anim Speed mmay need to be implemented here.  Need to go over the videos again.
+} 
+static void adjustAnimSpeed(vec2 ad_as)
+{
+    sceneObjs[currObject].animSpeed += ad_as[0];
+}
+
+
 static void mainmenu(int id) { 
     deactivateTool(); 
     if(id == 41 && currObject>=0) { 
@@ -692,6 +702,12 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400), 
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     } 
+    if(id == 60)
+    {
+        setToolCallbacks(adjustAnimDist, mat2(1.0,0,0,1.0),
+                            adjustAnimSpeed, mat2(1.0,0,0,1.0));
+    }
+
     if(id == 99) exit(0); 
 } 
  
@@ -730,6 +746,7 @@ static void makeMenu() {
   glutAddSubMenu("Texture",texMenuId); 
   glutAddSubMenu("Ground Texture",groundMenuId); 
   glutAddSubMenu("Lights",lightMenuId); 
+  glutAddSubMenu("Walk Distance/Direction",60);
   glutAddMenuEntry("EXIT", 99); 
   glutAttachMenu(GLUT_RIGHT_BUTTON); 
  
