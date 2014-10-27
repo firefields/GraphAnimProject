@@ -485,8 +485,8 @@ void drawMesh(SceneObject sceneObj, int id) {
 	    sceneObjs[id].animDir *= -1;
 	}
 	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] += cos(yAngle-180) * distTravel;
-	sceneObjs[id].loc[2] += sin(yAngle-180) * distTravel;
+	sceneObjs[id].loc[0] += sin(yAngle-180) * distTravel;
+	sceneObjs[id].loc[2] += cos(yAngle-180) * distTravel;
 	sceneObjs[id].curDist += abs(distTravel);
 	printf("ANGLE IS %f\n",yAngle-180);
     }
