@@ -67,7 +67,11 @@ typedef struct {
     vec3 rgb; 
     float brightness; // Multiplies all colours 
     int meshId; 
-    int texId; 
+    int texId;
+    float animDist;
+    float animSpeed;
+    float curDist;
+    int animDir;        //Sets direction of animation ( 1 for forwards, -1 for backwards) 
     float texScale; 
 } SceneObject; 
  
@@ -77,7 +81,8 @@ SceneObject sceneObjs[maxObjects]; // An array storing the objects currently in 
 int nObjects=0; // How many objects are currenly in the scene. 
 int currObject=-1; // The current object 
 int toolObj = -1;  // The object currently being modified 
-  
+
+float frameSpeedModify = 0.0;   //Modifies speed of animation dependant on frame rate
  
  
 //------------------------------------------------------------ 
@@ -295,6 +300,17 @@ static void addObject(int id) {
   sceneObjs[nObjects].meshId = id; 
   sceneObjs[nObjects].texId = rand() % numTextures; 
   sceneObjs[nObjects].texScale = 2.0; 
+
+  sceneObjs[nObjects].animDist  =   0.0;
+  sceneObjs[nObjects].animSpeed =   0.0;
+  sceneObjs[nObjects].curDist   =   0.0;
+  sceneObjs[nObjects].animDir   =   1;
+
+  if(id >= 56)
+  {
+    sceneObjs[nObjects].animDist    = 10.0;
+    sceneObjs[nObjects].animSpeed   = 1.0;
+  }
  
   toolObj = currObject = nObjects++; 
   setToolCallbacks(adjustLocXZ, camRotZ(), 
