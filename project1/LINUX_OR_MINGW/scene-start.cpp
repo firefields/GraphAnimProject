@@ -746,7 +746,7 @@ static void makeMenu() {
   glutAddSubMenu("Texture",texMenuId); 
   glutAddSubMenu("Ground Texture",groundMenuId); 
   glutAddSubMenu("Lights",lightMenuId); 
-  glutAddSubMenu("Walk Distance/Direction",60);
+  glutAddMenuEntry("Walk Distance/Direction",60);
   glutAddMenuEntry("EXIT", 99); 
   glutAttachMenu(GLUT_RIGHT_BUTTON); 
  
