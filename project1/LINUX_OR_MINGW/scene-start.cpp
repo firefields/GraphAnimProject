@@ -111,7 +111,6 @@ void loadTextureIfNotAlreadyLoaded(int i) {
 // You shouldn't need to modify this - it's called from drawMesh below. 
  
 void loadMeshIfNotAlreadyLoaded(int meshNumber) { 
- 
     if(meshNumber>=numMeshes || meshNumber < 0) { 
         printf("Error - no such  model number"); 
         exit(1); 
@@ -178,13 +177,12 @@ void loadMeshIfNotAlreadyLoaded(int meshNumber) {
     glBindBuffer( GL_ARRAY_BUFFER, buffers[0] ); CheckError();
     glBufferData( GL_ARRAY_BUFFER, sizeof(int)*4*mesh->mNumVertices, boneIDs, GL_STATIC_DRAW ); CheckError();
     glVertexAttribIPointer(vBoneIDs, 4, GL_INT, 0, BUFFER_OFFSET(0)); CheckError();
-    glEnableVertexAttribArray(vBoneIDs);     CheckError();
+    glEnableVertexAttribArray(vBoneIDs);	CheckError();
   
     glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
     glBufferData( GL_ARRAY_BUFFER, sizeof(float)*4*mesh->mNumVertices, boneWeights, GL_STATIC_DRAW );
     glVertexAttribPointer(vBoneWeights, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-    glEnableVertexAttribArray(vBoneWeights);    
-    CheckError();
+    glEnableVertexAttribArray(vBoneWeights);	CheckError();
 } 
  
 // -------------------------------------- 
@@ -274,7 +272,7 @@ static void previousObject(void)                // Iterates to the previous obje
 //------Add an object to the scene 
  
 static void addObject(int id) { 
- 
+  printf("adding object \n");
   vec2 currPos = currMouseXYworld(camRotSidewaysDeg); 
   sceneObjs[nObjects].loc[0] = currPos[0]; 
   sceneObjs[nObjects].loc[1] = 0.0; 
@@ -301,6 +299,7 @@ static void addObject(int id) {
   setToolCallbacks(adjustLocXZ, camRotZ(), 
                    adjustScaleY, mat2(0.05, 0, 0, 10.0) ); 
   glutPostRedisplay(); 
+  printf("finish adding object\n");
 } 
  
 //------Duplicate the current object 
@@ -424,7 +423,6 @@ void init( void )
 //---------------------------------------------------------------------------- 
  
 void drawMesh(SceneObject sceneObj) { 
- 
     // Activate a texture, loading if needed. 
     loadTextureIfNotAlreadyLoaded(sceneObj.texId); 
     glActiveTexture(GL_TEXTURE0 ); 
@@ -452,27 +450,27 @@ void drawMesh(SceneObject sceneObj) {
  
     // Set the model-view matrix for the shaders 
     glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
- 
+    loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
+    printf("nbones = %d\n",nBones);
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
-
+    //printf("Total Display calls %f \n", (float)totalDisplayCalls);
+    
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
     //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
-    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, 0.0 , boneTransforms);
+    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, (float)totalDisplayCalls , boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
- 
     // Activate the VAO for a mesh, loading if needed. 
-    loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     glBindVertexArray( vaoIDs[sceneObj.meshId] ); CheckError(); 
  
-    glDrawElements(GL_TRIANGLES, meshes[sceneObj.meshId]->mNumFaces * 3, GL_UNSIGNED_INT, NULL); CheckError(); 
+    glDrawElements(GL_TRIANGLES, meshes[sceneObj.meshId]->mNumFaces * 3, GL_UNSIGNED_INT, NULL); CheckError();
 } 
  
  
 void 
-display( void ) 
+display( void )  
 { 
     numDisplayCalls++; 
     totalDisplayCalls++;
@@ -821,7 +819,6 @@ int main( int argc, char* argv[] )
     glutTimerFunc(1000, timer, 1);   CheckError(); 
  
     makeMenu(); CheckError(); 
- 
     glutMainLoop(); 
     return 0; 
 } 
