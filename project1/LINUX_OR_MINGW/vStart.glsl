@@ -38,9 +38,9 @@ void main()
 
 
     //Apply boneTransform to Vertex Position and Vertex Normal
-    vec4 vPositionMod = vPosition * boneTransform;
-    vec4 vNormalMod = vec4(vNormal, 0.0) * boneTransform;
-
+    vec4 vPositionMod = boneTransform * vPosition;
+    vec4 vNormalMod = boneTransform * vec4(vNormal, 0.0);
+    //vec3 vNormalMod = (boneTransform * vec4(vNormal,0.0).xyz 
 
     // Transform vertex position into eye coordinates
     vec3 pos = (ModelView * vPositionMod).xyz;
@@ -66,4 +66,4 @@ void main()
 
     gl_Position = Projection * ModelView * vPositionMod;
     texCoord = vTexCoord;
-}
+} 

@@ -411,8 +411,8 @@ void init( void )
     sceneObjs[2].brightness = 1.5; // The light's brightness is 5 times this (below). 
  
  
-    addObject(rand() % numMeshes); // A test mesh 
- 
+    //addObject(rand() % numMeshes); // A test mesh 
+    addObject(56); // add gingerbread man
     // We need to enable the depth test to discard fragments that 
     // are behind previously drawn fragments for the same pixel. 
     glEnable( GL_DEPTH_TEST ); 
@@ -452,15 +452,16 @@ void drawMesh(SceneObject sceneObj) {
     glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
-    printf("nbones = %d\n",nBones);
+    //printf("nbones = %d\n",nBones);
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
-    //printf("Total Display calls %f \n", (float)totalDisplayCalls);
+    float animFrame =  (float)(totalDisplayCalls % 200 ) / 5.0 ;
+    printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
     
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
     //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
-    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, (float)totalDisplayCalls , boneTransforms);
+    calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
     // Activate the VAO for a mesh, loading if needed. 
     glBindVertexArray( vaoIDs[sceneObj.meshId] ); CheckError(); 
