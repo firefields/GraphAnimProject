@@ -70,9 +70,9 @@ typedef struct {
     int texId;
     float animDist;	// Sets maximum distance to run
     float animSpeed;	// Sets speed of model
-    float curDist;	// Current distance travelled by model
-    int animDir;        // Sets direction of animation ( 1 for forwards, -1 for backwards) 
     float texScale; 
+    int animNum;        //Sets Animation Type
+    bool animRun;       //Flag to set animation on and off
 } SceneObject; 
  
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely 
@@ -81,8 +81,6 @@ SceneObject sceneObjs[maxObjects]; // An array storing the objects currently in 
 int nObjects=0; // How many objects are currenly in the scene. 
 int currObject=-1; // The current object 
 int toolObj = -1;  // The object currently being modified 
-
-float frameSpeedModify = 1.0;   //Modifies speed of animation dependant on frame rate
  
  
 //------------------------------------------------------------ 
@@ -301,14 +299,14 @@ static void addObject(int id) {
   sceneObjs[nObjects].texId = rand() % numTextures; 
   sceneObjs[nObjects].texScale = 2.0; 
 
-  sceneObjs[nObjects].animDist  =   0.0;
-  sceneObjs[nObjects].animSpeed =   0.0;
-  sceneObjs[nObjects].curDist   =   0.0;
-  sceneObjs[nObjects].animDir   =   1;
+  sceneObjs[nObjects].animDist   =   0.0;
+  sceneObjs[nObjects].animSpeed  =   0.0;
+  sceneObjs[nObjects].animNum    =   0;
+  sceneObjs[nObjects].animRun    =   true;
 
   if(id >= 56)
   {
-    sceneObjs[nObjects].animDist    = 5.0;
+    sceneObjs[nObjects].animDist    = 2.0;
     sceneObjs[nObjects].animSpeed   = 1.0;
   }
  
@@ -429,6 +427,12 @@ void init( void )
  
     //addObject(rand() % numMeshes); // A test mesh 
     addObject(56); // add gingerbread man
+    sceneObjs[3].loc = vec4(0.0, 0.0, 0.0, 1.0); 
+    addObject(57); // add monkey head
+    sceneObjs[4].loc = vec4(-1.0, 0.0, 0.0, 1.0); 
+    addObject(58); // add gingerbread man circle path
+    sceneObjs[5].loc = vec4(1.0, 0.0, 1.0, 1.0); 
+
     // We need to enable the depth test to discard fragments that 
     // are behind previously drawn fragments for the same pixel. 
     glEnable( GL_DEPTH_TEST ); 
@@ -438,7 +442,7 @@ void init( void )
  
 //---------------------------------------------------------------------------- 
  
-void drawMesh(SceneObject sceneObj, int id) { 
+void drawMesh(SceneObject sceneObj, float elTime) { 
     // Activate a texture, loading if needed. 
     loadTextureIfNotAlreadyLoaded(sceneObj.texId); 
     glActiveTexture(GL_TEXTURE0 ); 
@@ -454,52 +458,56 @@ void drawMesh(SceneObject sceneObj, int id) {
  
     // Set the projection matrix for the shaders 
     glUniformMatrix4fv( projectionU, 1, GL_TRUE, projection ); 
- 
+
     // Set the model matrix  
     float xAngle = sceneObj.angles[0]; 
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
-    mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
-    if( sceneObj.meshId >= 56)
+    
+    float period = 1.0;
+    if(sceneObj.meshId == 58 && sceneObj.animRun == true)
     {
-	
-//	printf("location is %f",sceneObj.loc[0]);
-//	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + 1.0;//(sceneObj.animDist / sceneObj.animSpeed) * frameSpeedModify;
-//	printf(" now its %f\n",sceneObj.loc[0]);
-	//1]=sin(zAngle)
-	//printf("location is %f animDir is %d animDist is %f animSpeed is %f speedModify is %f\n",sceneObjs[id].loc[0],sceneObj.animDir,sceneObj.animDist,sceneObj.animSpeed,frameSpeedModify);
-	if( sceneObj.animDir > 0 && sceneObj.curDist >= sceneObj.animDist )
-	{
-	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir = sceneObjs[id].animDir * -1;
-	}
-	/*else if( sceneObj.animDir < 0 && sceneObj.curDist <= -sceneObj.animDist )
-	{
-	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir = 1;
-	}*/
-	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (1000.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] = sceneObjs[id].loc[0] + distTravel;
-	sceneObjs[id].curDist += abs(distTravel);
-	printf("adsadas %f\n",sceneObj.curDist);
+	//period = 10.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
+	// angular velocity = velocity / radius. Also convert to rad/s to deg/s
+	float periodRot = 180.0 * sceneObj.animSpeed / ( sceneObj.animDist * 3.141593 ); 
+	// period of 1 revolution
+	period = 2.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
+	float modifyRot = fmod( fmod(elTime,period) * periodRot, 360.0); // Angle = s * deg/s from 0 to 360
+	// Note here i take the mod of the total time with the period, as otherwise the total
+	// time will begin to dominate the formula and wash out the effect of the rotation term.
+	// The effect of this is the rotation of the model slowly becomes out of sync with the rotation
+	// which is still evident but not as prevelant
+	yAngle += modifyRot;
     }
+    else
+    {
+        period = sceneObj.animDist / sceneObj.animSpeed;    
+    }
+    //Now set the modifer for the animation frame
+    float modify = sin( elTime * 2.0 / period);
     
+    mat4 rotateMat = RotateZ(zAngle) *  RotateY(yAngle) * RotateX(xAngle); 
+
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
-    
- 
+
     // Set the model-view matrix for the shaders 
-    glUniformMatrix4fv( modelViewU, 1
-    , GL_TRUE, view * model ); 
+    glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
-    
-    float animFrame =  (float)(totalDisplayCalls % (40 * 5 )) / frameSpeedModify;
-    //printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
-    
+    // We need to determine a frame number between 0 and 40. to do this, do 20 * (1 + time). 
+    // The 2 / period in sin scales the time to change the animation speed
+    // Similarly * period scales the animation speed to the distance
+    // fmod takes the modulus to give a number between 0 and 40
+
+    //float animFrame = fmod( (20 * ( 1 + modify ) * period ), 40);
+ 
+    float animFrame = 0.0;
+    if(sceneObj.animRun == true)
+    {
+        animFrame = (float)(sceneObj.animNum*50 +1) + fmod( 20 * ( 1 + modify ) * period, 40);
+    }
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
-    //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
-    //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
@@ -524,7 +532,6 @@ display( void )
     // commands and translated backwards by viewDist 
     view = Translate(0.0, 0.0, -viewDist) * RotateX(camRotUpAndOverDeg) *  RotateY(camRotSidewaysDeg); 
  
- 
     SceneObject lightObj1 = sceneObjs[1];  
     SceneObject lightObj2 = sceneObjs[2]; 
     vec4 lightPosition1 = view * lightObj1.loc; 
@@ -542,9 +549,51 @@ display( void )
         glUniform3fv( glGetUniformLocation(shaderProgram, "DiffuseProduct"), 1, so.diffuse * rgb ); 
         glUniform3fv( glGetUniformLocation(shaderProgram, "SpecularProduct"), 1, so.specular * rgb ); 
         glUniform1f( glGetUniformLocation(shaderProgram, "Shininess"), so.shine ); CheckError(); 
- 
-        drawMesh(sceneObjs[i],i); 
- 
+	
+	float period = so.animDist / so.animSpeed;		    // Time to reach distance
+        float elTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001;   // Time since start in seconds
+
+	if( so.meshId >= 56 && so.animRun == true)
+	{
+	    // Check to see if distance or speed are less than 0. If they are set them to 0.1
+	    if( so.animDist < 0.1)
+	    {
+		sceneObjs[i].animDist = 0.1;
+	    }
+	    if( so.animSpeed < 0.1)
+	    {
+		sceneObjs[i].animSpeed = 0.1;
+	    }
+	    float modify = sin( elTime * 2.0 / period);
+	    // Define vector to describe the new location
+	    vec4 posVec;
+	    // Using rotation matrices set the direction of motion as defined by the direction the model 
+	    // is facing. Use this to scale the distance it needs to travel in each direction to
+	    // determine the new location.  The distance to travel is dependent on the time
+	    posVec =  RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
+		      * vec4(0.0, 0.0, so.animDist * modify, 0.0);
+	    if( so.meshId == 58)
+	    {   
+		// recalculate period given by circumference of circle
+		period = 2.0 * 3.141593 * so.animDist / so.animSpeed;
+		modify =  sin( elTime * 10.0 / period);
+
+		// To make gus go in a full circle he needs to go both in positive and negative z
+		// directions. When the cos of the time is negative he will need to be moving in the 
+		//opposite direction, so set the zDir to be 1.0 or -1.0 depending on the cos value 
+		float modify2 = cos( elTime * 10.0 / period);
+		float zDir = modify2 / abs(modify2);
+		
+		float radius = so.animDist;
+		float x = radius * modify;
+		float z = zDir * sqrt( pow(radius,2) - pow(x,2) );
+		posVec = RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
+		         * vec4(x, 0.0, z, 0.0);
+	    }
+	    so.loc += posVec;
+	}
+        
+	drawMesh(so, elTime); 
     } 
  
     glutSwapBuffers(); 
@@ -670,12 +719,53 @@ static void adjustAngleYX(vec2 angle_yx)
  
 static void adjustAngleZTexscale(vec2 az_ts)  
   {  sceneObjs[currObject].angles[2]+=az_ts[0]; sceneObjs[currObject].texScale+=az_ts[1]; } 
- 
- 
+
+// Left mouse button up/down to change distance. Middle mouse button up/down changes speed
+static void adjustAnimDist(vec2 ad_ad)
+{
+    sceneObjs[currObject].animDist += ad_ad[1];
+    //sceneObjs[currObject].animSpeed += ad_ad[1];  //Anim Speed mmay need to be implemented here.  Need to go over the videos again.
+} 
+static void adjustAnimSpeed(vec2 ad_as)
+{
+    sceneObjs[currObject].animSpeed += ad_as[1];
+}
+
+static void animationMenu(int id)
+{
+    
+    if(id == 60)
+    {
+        setToolCallbacks(adjustAnimDist, mat2(20.0,0,0,1.0),
+                         adjustAnimSpeed, mat2(30.0,0,0,1.0));
+    }
+
+    if(id == 61)
+    {
+        if(sceneObjs[currObject].animRun == true)
+        {
+            sceneObjs[currObject].animRun = false;
+        }
+        else
+        {
+            sceneObjs[currObject].animRun = true;
+        }
+    }
+    if(id == 62)
+    {
+        sceneObjs[currObject].animNum = 0;
+    }
+    if(id == 63)
+    {
+        sceneObjs[currObject].animNum = 1;
+    }
+
+}
+
 static void mainmenu(int id) { 
     deactivateTool(); 
     if(id == 41 && currObject>=0) { 
-	toolObj=currObject; 
+	toolObj=currObject;  
         setToolCallbacks(adjustLocXZ, camRotZ(), 
                          adjustScaleY, mat2(0.05, 0, 0, 10) ); 
     } 
@@ -685,6 +775,7 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400), 
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     } 
+
     if(id == 99) exit(0); 
 } 
  
@@ -712,6 +803,12 @@ static void makeMenu() {
   // Implement an option to duplicate an object 
   glutAddMenuEntry("Duplicate object", 110); 
  
+ // Create a submenu to deal with animations
+  int animationMenuId = glutCreateMenu(animationMenu);
+  glutAddMenuEntry("Walk Distance/Speed",60);
+  glutAddMenuEntry("On/Off",61);
+  glutAddMenuEntry("Animation 1",62);
+  glutAddMenuEntry("Animation 2",63);
  
  
   glutCreateMenu(mainmenu); 
@@ -723,6 +820,7 @@ static void makeMenu() {
   glutAddSubMenu("Texture",texMenuId); 
   glutAddSubMenu("Ground Texture",groundMenuId); 
   glutAddSubMenu("Lights",lightMenuId); 
+  glutAddSubMenu("Animation Tools",animationMenuId);
   glutAddMenuEntry("EXIT", 99); 
   glutAttachMenu(GLUT_RIGHT_BUTTON); 
  
@@ -794,10 +892,6 @@ void timer(int unused)
     char title[256]; 
     sprintf(title, "%s %s: %d Frames Per Second @ %d x %d", 
             lab, programName, numDisplayCalls, windowWidth, windowHeight ); 
-    if( numDisplayCalls > 0)
-    {
-	frameSpeedModify = numDisplayCalls / 100.0;
-    }
 
     glutSetWindowTitle(title); 
     
