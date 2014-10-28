@@ -73,6 +73,8 @@ typedef struct {
     float curDist;	// Current distance travelled by model
     int animDir;        // Sets direction of animation ( 1 for forwards, -1 for backwards) 
     float texScale; 
+    int animNum;        //Sets Animation Type
+    bool animRun;       //Flag to set animation on and off
 } SceneObject; 
  
 const int maxObjects = 1024; // Scenes with more than 1024 objects seem unlikely 
@@ -305,6 +307,8 @@ static void addObject(int id) {
   sceneObjs[nObjects].animSpeed  =   0.0;
   sceneObjs[nObjects].curDist    =   0.0;
   sceneObjs[nObjects].animDir    =   1;
+  sceneObjs[nObjects].animNum    =   0;
+  sceneObjs[nObjects].animRun    =   true;
 
   if(id >= 56)
   {
@@ -467,7 +471,7 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     float zAngle = sceneObj.angles[2]; 
     
     float period = 1.0;
-    if(sceneObj.meshId == 58)
+    if(sceneObj.meshId == 58 && sceneObj.animRun == true)
     {
 	//period = 10.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
 	// angular velocity = velocity / radius. Also convert to rad/s to deg/s
@@ -501,8 +505,14 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     // The 2 / period in sin scales the time to change the animation speed
     // Similarly * period scales the animation speed to the distance
     // fmod takes the modulus to give a number between 0 and 40
-    float animFrame = fmod( (20 * ( 1 + modify ) * period ), 40);
+
+    //float animFrame = fmod( (20 * ( 1 + modify ) * period ), 40);
  
+    float animFrame = 0.0;
+    if(sceneObj.animRun == true)
+    {
+        animFrame = (float)(sceneObj.animNum*50 +1) + fmod( 20 * ( 1 + modify ) * period, 40);
+    }
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
@@ -549,7 +559,7 @@ display( void )
 	float period = so.animDist / so.animSpeed;		    // Time to reach distance
         float elTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001;   // Time since start in seconds
 
-	if( so.meshId >= 56 )
+	if( so.meshId >= 56 && so.animRun == true)
 	{
 	    float modify = sin( elTime * 2.0 / period);
 	    // Define vector to describe the new location
@@ -718,6 +728,36 @@ static void adjustAnimSpeed(vec2 ad_as)
     sceneObjs[currObject].animSpeed += ad_as[1];
 }
 
+static void animationMenu(int id)
+{
+    
+    if(id == 60)
+    {
+        setToolCallbacks(adjustAnimDist, mat2(10.0,0,0,1.0),
+                         adjustAnimSpeed, mat2(10.0,0,0,1.0));
+    }
+
+    if(id == 61)
+    {
+        if(sceneObjs[currObject].animRun == true)
+        {
+            sceneObjs[currObject].animRun = false;
+        }
+        else
+        {
+            sceneObjs[currObject].animRun = true;
+        }
+    }
+    if(id == 62)
+    {
+        sceneObjs[currObject].animNum = 0;
+    }
+    if(id == 63)
+    {
+        sceneObjs[currObject].animNum = 1;
+    }
+
+}
 
 static void mainmenu(int id) { 
     deactivateTool(); 
@@ -732,11 +772,6 @@ static void mainmenu(int id) {
         setToolCallbacks(adjustAngleYX, mat2(400, 0, 0, -400), 
                          adjustAngleZTexscale, mat2(400, 0, 0, 15) );
     } 
-    if(id == 60)
-    {
-        setToolCallbacks(adjustAnimDist, mat2(10.0,0,0,1.0),
-                         adjustAnimSpeed, mat2(10.0,0,0,1.0));
-    }
 
     if(id == 99) exit(0); 
 } 
@@ -765,6 +800,12 @@ static void makeMenu() {
   // Implement an option to duplicate an object 
   glutAddMenuEntry("Duplicate object", 110); 
  
+ // Create a submenu to deal with animations
+  int animationMenuId = glutCreateMenu(animationMenu);
+  glutAddMenuEntry("Walk Distance/Speed",60);
+  glutAddMenuEntry("On/Off",61);
+  glutAddMenuEntry("Animation 1",62);
+  glutAddMenuEntry("Animation 2",63);
  
  
   glutCreateMenu(mainmenu); 
@@ -776,7 +817,7 @@ static void makeMenu() {
   glutAddSubMenu("Texture",texMenuId); 
   glutAddSubMenu("Ground Texture",groundMenuId); 
   glutAddSubMenu("Lights",lightMenuId); 
-  glutAddMenuEntry("Walk Distance/Speed",60);
+  glutAddSubMenu("Animation Tools",animationMenuId);
   glutAddMenuEntry("EXIT", 99); 
   glutAttachMenu(GLUT_RIGHT_BUTTON); 
  
