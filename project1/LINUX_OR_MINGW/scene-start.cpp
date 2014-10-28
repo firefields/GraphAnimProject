@@ -465,6 +465,29 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     float xAngle = sceneObj.angles[0]; 
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
+    
+    float period = 1.0;
+    if(sceneObj.meshId == 58)
+    {
+	//period = 10.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
+	// angular velocity = velocity / radius. Also convert to rad/s to deg/s
+	float periodRot = 180.0 * sceneObj.animSpeed / ( sceneObj.animDist * 3.141593 ); 
+	// period of 1 revolution
+	period = 2.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
+	float modifyRot = fmod( fmod(elTime,period) * periodRot, 360.0); // Angle = s * deg/s from 0 to 360
+	// Note here i take the mod of the total time with the period, as otherwise the total
+	// time will begin to dominate the formula and wash out the effect of the rotation term.
+	// The effect of this is the rotation of the model slowly becomes out of sync with the rotation
+	// which is still evident but not as prevelant
+	yAngle += modifyRot;
+    }
+    else
+    {
+        period = sceneObj.animDist / sceneObj.animSpeed;    
+    }
+    //Now set the modifer for the animation frame
+    float modify = sin( elTime * 2.0 / period);
+    
     mat4 rotateMat = RotateZ(zAngle) *  RotateY(yAngle) * RotateX(xAngle); 
 
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
@@ -474,14 +497,12 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
-    
-    float period = sceneObj.animDist / sceneObj.animSpeed;
     // We need to determine a frame number between 0 and 40. to do this, do 20 * (1 + time). 
     // The 2 / period in sin scales the time to change the animation speed
     // Similarly * period scales the animation speed to the distance
     // fmod takes the modulus to give a number between 0 and 40
-    float animFrame = fmod( (20 * ( 1 + sin( elTime * 2.0 / period ) ) * period ), 40);
-    
+    float animFrame = fmod( (20 * ( 1 + modify ) * period ), 40);
+ 
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
@@ -528,36 +549,33 @@ display( void )
 	float period = so.animDist / so.animSpeed;		    // Time to reach distance
         float elTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001;   // Time since start in seconds
 
-	if( so.meshId >= 56)
+	if( so.meshId >= 56 )
 	{
 	    float modify = sin( elTime * 2.0 / period);
 	    // Define vector to describe the new location
 	    vec4 posVec;
 	    // Using rotation matrices set the direction of motion as defined by the direction the model 
-	   // is facing. Use this to scale the distance it needs to travel in each direction to
+	    // is facing. Use this to scale the distance it needs to travel in each direction to
 	    // determine the new location.  The distance to travel is dependent on the time
 	    posVec =  RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
 		      * vec4(0.0, 0.0, so.animDist * modify, 0.0);
 	    if( so.meshId == 58)
 	    {   
-		// Rotate the model around the y axis for guy running in circle 
-		//yAngle = so.angles[1] += 0.01;//0.005 * frameSpeedModify;
-		// Define a new translation position based on the "position" of the model. The position
-		// is the centre of the circle - so the user moves the centre of rotation for the model
-		//vec4 newPos;
-		//newPos[0] = so.loc[0] + sin( yAngle-180.0) * ( abs(so.animDist) ); 
-		//newPos[1] = so.loc[1]; 
-	//	newPos[2] = so.loc[2] + cos( yAngle-180.0) * ( abs(so.animDist) );
-	//	newPos[3] = so.loc[3];
-	//	rotateMat = RotateY(yAngle *50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
-	//	model = Translate(newPos) * Scale(so.scale) * rotateMat; 
+		// recalculate period given by circumference of circle
+		period = 2.0 * 3.141593 * so.animDist / so.animSpeed;
+		modify =  sin( elTime * 10.0 / period);
+
+		// To make gus go in a full circle he needs to go both in positive and negative z
+		// directions. When the cos of the time is negative he will need to be moving in the 
+		//opposite direction, so set the zDir to be 1.0 or -1.0 depending on the cos value 
+		float modify2 = cos( elTime * 10.0 / period);
+		float zDir = modify2 / abs(modify2);
 		
-		//posVec =  RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
-	    	//	  * vec4(0.0, 0.0 , so.animDist * modify, 0.0);
-		posVec = vec4(  so.loc[0] + sin( so.angles[2]) * so.animDist * modify,  
-				so.loc[1], 
-				so.loc[2] + cos( so.angles[2]) * so.animDist * modify,
-				so.loc[3]);
+		float radius = so.animDist;
+		float x = radius * modify;
+		float z = zDir * sqrt( pow(radius,2) - pow(x,2) );
+		posVec = RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
+		         * vec4(x, 0.0, z, 0.0);
 	    }
 	    so.loc += posVec;
 	}
