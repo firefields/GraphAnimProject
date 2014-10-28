@@ -834,7 +834,7 @@ void timer(int unused)
     char title[256]; 
     sprintf(title, "%s %s: %d Frames Per Second @ %d x %d", 
             lab, programName, numDisplayCalls, windowWidth, windowHeight ); 
-    /*
+/*
     if( numDisplayCalls > 0)
     {
 	frameSpeedModify = (float)numDisplayCalls / 100.0;
@@ -843,23 +843,12 @@ void timer(int unused)
     {
 	frameSpeedModify = 50.0;
     }
-<<<<<<< HEAD
-    */
-    
-=======
-    /*
->>>>>>> FETCH_HEAD
+*/
     if( numDisplayCalls != 0)
     {
     frameSpeedModify = (30/(float)numDisplayCalls)*400;
     }
-<<<<<<< HEAD
 
-    
-
-=======
-    */
->>>>>>> FETCH_HEAD
     glutSetWindowTitle(title); 
     
     numDisplayCalls = 0; 
