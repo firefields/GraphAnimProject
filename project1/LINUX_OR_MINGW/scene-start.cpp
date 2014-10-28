@@ -489,7 +489,7 @@ void drawMesh(SceneObject sceneObj, int id) {
 	if( sceneObj.meshId == 58)
 	{
 	    // Rotate the model around the y axis for guy running in circle 
-	    yAngle = sceneObjs[id].angles[1] += 0.0005 * frameSpeedModify * abs(sceneObj.animDir);
+	    yAngle = sceneObjs[id].angles[1] += 0.01;//0.005 * frameSpeedModify;
 	    // Define a new translation position based on the "position" of the model. The position
 	    // is the centre of the circle - so the user moves the centre of rotation for the model
 	    vec4 newPos;
@@ -497,13 +497,11 @@ void drawMesh(SceneObject sceneObj, int id) {
 	    newPos[1] = sceneObj.loc[1]; 
 	    newPos[2] = sceneObj.loc[2] + cos( yAngle-180.0) * ( abs(sceneObj.animDist) );
 	    newPos[3] = sceneObj.loc[3];
-	    rotateMat = RotateY(yAngle * 50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
+	    rotateMat = RotateY(yAngle *50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
 	    model = Translate(newPos) * Scale(sceneObj.scale) * rotateMat; 
 	}
     }
 
-    
- 
     // Set the model-view matrix for the shaders 
     glUniformMatrix4fv( modelViewU, 1
     , GL_TRUE, view * model ); 
@@ -710,7 +708,7 @@ static void adjustAnimSpeed(vec2 ad_as)
 static void mainmenu(int id) { 
     deactivateTool(); 
     if(id == 41 && currObject>=0) { 
-	toolObj=currObject; 
+	toolObj=currObject;  
         setToolCallbacks(adjustLocXZ, camRotZ(), 
                          adjustScaleY, mat2(0.05, 0, 0, 10) ); 
     } 
@@ -838,16 +836,18 @@ void timer(int unused)
             lab, programName, numDisplayCalls, windowWidth, windowHeight ); 
     if( numDisplayCalls > 0)
     {
-	frameSpeedModify = numDisplayCalls / 100.0;
+	frameSpeedModify = (float)numDisplayCalls / 100.0;
     }
-
+    else
+    {
+	frameSpeedModify = 50.0;
+    }
     /*
     if( numDisplayCalls != 0)
     {
     frameSpeedModify = 30/(float)numDisplayCalls;
     }
     */
-
     glutSetWindowTitle(title); 
     
     numDisplayCalls = 0; 
