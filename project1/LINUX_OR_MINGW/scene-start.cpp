@@ -535,7 +535,7 @@ display( void )
 	float period = so.animDist / so.animSpeed;		    // Time to reach distance
         float elTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001;   // Time since start in seconds
 
-	if( so.meshId >= 56)
+	if( so.meshId >= 56 && so.animRun == true)
 	{
 	    float modify = sin( elTime * 2.0 / period);
 	    // Define vector to describe the new location
