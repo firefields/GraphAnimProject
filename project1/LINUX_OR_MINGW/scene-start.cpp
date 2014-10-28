@@ -69,7 +69,6 @@ typedef struct {
     int meshId; 
     int texId;
     float animDist;	// Sets maximum distance to run
-    float animRadius;	// Sets the radius for the circle guy
     float animSpeed;	// Sets speed of model
     float curDist;	// Current distance travelled by model
     int animDir;        // Sets direction of animation ( 1 for forwards, -1 for backwards) 
@@ -306,13 +305,11 @@ static void addObject(int id) {
   sceneObjs[nObjects].animSpeed  =   0.0;
   sceneObjs[nObjects].curDist    =   0.0;
   sceneObjs[nObjects].animDir    =   1;
-  sceneObjs[nObjects].animRadius =   0.0;
 
   if(id >= 56)
   {
     sceneObjs[nObjects].animDist    = 2.0;
     sceneObjs[nObjects].animSpeed   = 1.0;
-    sceneObjs[nObjects].animRadius  = 1.0;
   }
  
   toolObj = currObject = nObjects++; 
@@ -447,7 +444,7 @@ void init( void )
  
 //---------------------------------------------------------------------------- 
  
-void drawMesh(SceneObject sceneObj, int id) { 
+void drawMesh(SceneObject sceneObj, float elTime) { 
     // Activate a texture, loading if needed. 
     loadTextureIfNotAlreadyLoaded(sceneObj.texId); 
     glActiveTexture(GL_TEXTURE0 ); 
@@ -468,61 +465,24 @@ void drawMesh(SceneObject sceneObj, int id) {
     float xAngle = sceneObj.angles[0]; 
     float yAngle = sceneObj.angles[1]; 
     float zAngle = sceneObj.angles[2]; 
-    mat4 rotateMat = RotateY(yAngle) * RotateZ(zAngle) *  RotateX(xAngle); 
+    mat4 rotateMat = RotateZ(zAngle) *  RotateY(yAngle) * RotateX(xAngle); 
 
     mat4 model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
 
-    if( sceneObj.meshId >= 56)
-    {
-    	if( sceneObj.curDist >= sceneObj.animDist )
-	{
-	    sceneObjs[id].curDist = 0.0;
-	    sceneObjs[id].animDir *= -1;
-	}
-	float distTravel = sceneObj.animDir * (sceneObj.animDist / sceneObj.animSpeed) / (500.0 * frameSpeedModify);
-	sceneObjs[id].loc[0] += sin( yAngle-180.0) * distTravel;
-	sceneObjs[id].loc[2] += cos( yAngle-180.0) * distTravel;
-	sceneObjs[id].curDist += abs(distTravel);
-        model = Translate(sceneObj.loc) * Scale(sceneObj.scale) * rotateMat; 
-	//printf("ANGLE IS %f\n",yAngle-180);
-	//printf("dist is %f and speed is %f\n",sceneObj.animDist,sceneObj.animSpeed );
-	if( sceneObj.meshId == 58)
-	{
-	    // Rotate the model around the y axis for guy running in circle 
-	    yAngle = sceneObjs[id].angles[1] += 0.01;//0.005 * frameSpeedModify;
-	    // Define a new translation position based on the "position" of the model. The position
-	    // is the centre of the circle - so the user moves the centre of rotation for the model
-	    vec4 newPos;
-	    newPos[0] = sceneObj.loc[0] + sin( yAngle-180.0) * ( abs(sceneObj.animDist) ); 
-	    newPos[1] = sceneObj.loc[1]; 
-	    newPos[2] = sceneObj.loc[2] + cos( yAngle-180.0) * ( abs(sceneObj.animDist) );
-	    newPos[3] = sceneObj.loc[3];
-	    rotateMat = RotateY(yAngle *50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
-	    model = Translate(newPos) * Scale(sceneObj.scale) * rotateMat; 
-	}
-    }
-
     // Set the model-view matrix for the shaders 
-    glUniformMatrix4fv( modelViewU, 1
-    , GL_TRUE, view * model ); 
+    glUniformMatrix4fv( modelViewU, 1, GL_TRUE, view * model ); 
     loadMeshIfNotAlreadyLoaded(sceneObj.meshId); CheckError(); 
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
     
-    float animFrame =  fmod((float)totalDisplayCalls , (40 * frameSpeedModify )) / frameSpeedModify; 
-    
-    
-    //int animFPS = 30000; // FPS for animation
-    //int time = glutGet(GLUT_ELAPSED_TIME);
-    //float animFrame = (float) ( time % ( 40 / animFPS)  * animFPS );
-    // Here * by animFPS as it is equivalent to dividing by time per frame
-    //printf("animFram %f and time is %d\n",animFrame,time);
-    
-    //printf("Total Display calls %f and relative frame %f \n", (float)totalDisplayCalls,animFrame);
+    float period = sceneObj.animDist / sceneObj.animSpeed;
+    // We need to determine a frame number between 0 and 40. to do this, do 20 * (1 + time). 
+    // The 2 / period in sin scales the time to change the animation speed
+    // Similarly * period scales the animation speed to the distance
+    // fmod takes the modulus to give a number between 0 and 40
+    float animFrame = fmod( (20 * ( 1 + sin( elTime * 2.0 / period ) ) * period ), 40);
     
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
-    //    (Replace <POSE_TIME> appropriately with a float expression giving the time relative to
-    //     the start of the animation, measured in frames, like the frame numbers in Blender.)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
     glUniformMatrix4fv(uBoneTransforms, nBones, GL_TRUE, (const GLfloat *)boneTransforms);
@@ -547,7 +507,6 @@ display( void )
     // commands and translated backwards by viewDist 
     view = Translate(0.0, 0.0, -viewDist) * RotateX(camRotUpAndOverDeg) *  RotateY(camRotSidewaysDeg); 
  
- 
     SceneObject lightObj1 = sceneObjs[1];  
     SceneObject lightObj2 = sceneObjs[2]; 
     vec4 lightPosition1 = view * lightObj1.loc; 
@@ -565,9 +524,45 @@ display( void )
         glUniform3fv( glGetUniformLocation(shaderProgram, "DiffuseProduct"), 1, so.diffuse * rgb ); 
         glUniform3fv( glGetUniformLocation(shaderProgram, "SpecularProduct"), 1, so.specular * rgb ); 
         glUniform1f( glGetUniformLocation(shaderProgram, "Shininess"), so.shine ); CheckError(); 
- 
-        drawMesh(sceneObjs[i],i); 
- 
+	
+	float period = so.animDist / so.animSpeed;		    // Time to reach distance
+        float elTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001;   // Time since start in seconds
+
+	if( so.meshId >= 56)
+	{
+	    float modify = sin( elTime * 2.0 / period);
+	    // Define vector to describe the new location
+	    vec4 posVec;
+	    // Using rotation matrices set the direction of motion as defined by the direction the model 
+	   // is facing. Use this to scale the distance it needs to travel in each direction to
+	    // determine the new location.  The distance to travel is dependent on the time
+	    posVec =  RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
+		      * vec4(0.0, 0.0, so.animDist * modify, 0.0);
+	    if( so.meshId == 58)
+	    {   
+		// Rotate the model around the y axis for guy running in circle 
+		//yAngle = so.angles[1] += 0.01;//0.005 * frameSpeedModify;
+		// Define a new translation position based on the "position" of the model. The position
+		// is the centre of the circle - so the user moves the centre of rotation for the model
+		//vec4 newPos;
+		//newPos[0] = so.loc[0] + sin( yAngle-180.0) * ( abs(so.animDist) ); 
+		//newPos[1] = so.loc[1]; 
+	//	newPos[2] = so.loc[2] + cos( yAngle-180.0) * ( abs(so.animDist) );
+	//	newPos[3] = so.loc[3];
+	//	rotateMat = RotateY(yAngle *50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
+	//	model = Translate(newPos) * Scale(so.scale) * rotateMat; 
+		
+		//posVec =  RotateZ(so.angles[2]) * RotateY(so.angles[1]) * RotateX(so.angles[0])
+	    	//	  * vec4(0.0, 0.0 , so.animDist * modify, 0.0);
+		posVec = vec4(  so.loc[0] + sin( so.angles[2]) * so.animDist * modify,  
+				so.loc[1], 
+				so.loc[2] + cos( so.angles[2]) * so.animDist * modify,
+				so.loc[3]);
+	    }
+	    so.loc += posVec;
+	}
+        
+	drawMesh(so, elTime); 
     } 
  
     glutSwapBuffers(); 
@@ -693,15 +688,16 @@ static void adjustAngleYX(vec2 angle_yx)
  
 static void adjustAngleZTexscale(vec2 az_ts)  
   {  sceneObjs[currObject].angles[2]+=az_ts[0]; sceneObjs[currObject].texScale+=az_ts[1]; } 
- 
-static void adjustAnimDistRadius(vec2 ad_ad)
+
+// Left mouse button up/down to change distance. Middle mouse button up/down changes speed
+static void adjustAnimDist(vec2 ad_ad)
 {
-    sceneObjs[currObject].animDist += ad_ad[0]; sceneObjs[currObject].animRadius+=ad_ad[1];
+    sceneObjs[currObject].animDist += ad_ad[1];
     //sceneObjs[currObject].animSpeed += ad_ad[1];  //Anim Speed mmay need to be implemented here.  Need to go over the videos again.
 } 
 static void adjustAnimSpeed(vec2 ad_as)
 {
-    sceneObjs[currObject].animSpeed += ad_as[0];
+    sceneObjs[currObject].animSpeed += ad_as[1];
 }
 
 
@@ -720,8 +716,8 @@ static void mainmenu(int id) {
     } 
     if(id == 60)
     {
-        setToolCallbacks(adjustAnimDistRadius, mat2(1.0,0,0,1.0),
-                         adjustAnimSpeed, mat2(1.0,0,0,1.0));
+        setToolCallbacks(adjustAnimDist, mat2(10.0,0,0,1.0),
+                         adjustAnimSpeed, mat2(10.0,0,0,1.0));
     }
 
     if(id == 99) exit(0); 
