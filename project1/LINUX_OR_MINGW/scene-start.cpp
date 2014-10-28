@@ -484,8 +484,11 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     // The 2 / period in sin scales the time to change the animation speed
     // Similarly * period scales the animation speed to the distance
     // fmod takes the modulus to give a number between 0 and 40
-    float animFrame = (float)(sceneObj.animNum*50 +1) + fmod( (20 * ( 1 + sin( elTime * 2.0 / period ) ) * period ), 40);
-    
+    float animFrame = 0.0;
+    if(sceneObj.animRun == true)
+    {
+        animFrame = (float)(sceneObj.animNum*50 +1) + fmod( (20 * ( 1 + sin( elTime * 2.0 / period ) ) * period ), 40);
+    }
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
     calculateAnimPose(meshes[sceneObj.meshId], scenes[sceneObj.meshId], 0, animFrame, boneTransforms);
