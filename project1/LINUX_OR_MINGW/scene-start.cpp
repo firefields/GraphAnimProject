@@ -70,8 +70,6 @@ typedef struct {
     int texId;
     float animDist;	// Sets maximum distance to run
     float animSpeed;	// Sets speed of model
-    float curDist;	// Current distance travelled by model
-    int animDir;        // Sets direction of animation ( 1 for forwards, -1 for backwards) 
     float texScale; 
     int animNum;        //Sets Animation Type
     bool animRun;       //Flag to set animation on and off
@@ -83,8 +81,6 @@ SceneObject sceneObjs[maxObjects]; // An array storing the objects currently in 
 int nObjects=0; // How many objects are currenly in the scene. 
 int currObject=-1; // The current object 
 int toolObj = -1;  // The object currently being modified 
-
-float frameSpeedModify = 1.0;   //Modifies speed of animation dependant on frame rate
  
  
 //------------------------------------------------------------ 
@@ -305,8 +301,6 @@ static void addObject(int id) {
 
   sceneObjs[nObjects].animDist   =   0.0;
   sceneObjs[nObjects].animSpeed  =   0.0;
-  sceneObjs[nObjects].curDist    =   0.0;
-  sceneObjs[nObjects].animDir    =   1;
   sceneObjs[nObjects].animNum    =   0;
   sceneObjs[nObjects].animRun    =   true;
 
@@ -561,6 +555,15 @@ display( void )
 
 	if( so.meshId >= 56 && so.animRun == true)
 	{
+	    // Check to see if distance or speed are less than 0. If they are set them to 0.1
+	    if( so.animDist < 0.1)
+	    {
+		sceneObjs[i].animDist = 0.1;
+	    }
+	    if( so.animSpeed < 0.1)
+	    {
+		sceneObjs[i].animSpeed = 0.1;
+	    }
 	    float modify = sin( elTime * 2.0 / period);
 	    // Define vector to describe the new location
 	    vec4 posVec;
@@ -733,8 +736,8 @@ static void animationMenu(int id)
     
     if(id == 60)
     {
-        setToolCallbacks(adjustAnimDist, mat2(10.0,0,0,1.0),
-                         adjustAnimSpeed, mat2(10.0,0,0,1.0));
+        setToolCallbacks(adjustAnimDist, mat2(20.0,0,0,1.0),
+                         adjustAnimSpeed, mat2(30.0,0,0,1.0));
     }
 
     if(id == 61)
@@ -889,20 +892,6 @@ void timer(int unused)
     char title[256]; 
     sprintf(title, "%s %s: %d Frames Per Second @ %d x %d", 
             lab, programName, numDisplayCalls, windowWidth, windowHeight ); 
-/*
-    if( numDisplayCalls > 0)
-    {
-	frameSpeedModify = (float)numDisplayCalls / 100.0;
-    }
-    else
-    {
-	frameSpeedModify = 50.0;
-    }
-*/
-    if( numDisplayCalls != 0)
-    {
-    frameSpeedModify = (30/(float)numDisplayCalls)*400;
-    }
 
     glutSetWindowTitle(title); 
     
