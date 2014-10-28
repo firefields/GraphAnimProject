@@ -493,9 +493,9 @@ void drawMesh(SceneObject sceneObj, int id) {
 	    // Define a new translation position based on the "position" of the model. The position
 	    // is the centre of the circle - so the user moves the centre of rotation for the model
 	    vec4 newPos;
-	    newPos[0] = sceneObj.loc[0] + sin( yAngle-180.0) * ( abs(sceneObj.animRadius) ); 
+	    newPos[0] = sceneObj.loc[0] + sin( yAngle-180.0) * ( abs(sceneObj.animDist) ); 
 	    newPos[1] = sceneObj.loc[1]; 
-	    newPos[2] = sceneObj.loc[2] + cos( yAngle-180.0) * ( abs(sceneObj.animRadius) );
+	    newPos[2] = sceneObj.loc[2] + cos( yAngle-180.0) * ( abs(sceneObj.animDist) );
 	    newPos[3] = sceneObj.loc[3];
 	    rotateMat = RotateY(yAngle * 50.0) * RotateZ(zAngle) *  RotateX(xAngle); 
 	    model = Translate(newPos) * Scale(sceneObj.scale) * rotateMat; 
