@@ -842,6 +842,12 @@ void timer(int unused)
     {
 	frameSpeedModify = 50.0;
     }
+    /*
+    if( numDisplayCalls != 0)
+    {
+    frameSpeedModify = 30/(float)numDisplayCalls;
+    }
+    */
     glutSetWindowTitle(title); 
     
     numDisplayCalls = 0; 
