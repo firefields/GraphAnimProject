@@ -509,7 +509,7 @@ void drawMesh(SceneObject sceneObj, int id) {
     int nBones = meshes[sceneObj.meshId]->mNumBones;
     if(nBones == 0)  nBones = 1;  // If no bones, just a single identity matrix is used
     
-    float animFrame =  (float)(totalDisplayCalls % (40 * (int)frameSpeedModify )) / frameSpeedModify; 
+    float animFrame =  fmod((float)totalDisplayCalls , (40 * frameSpeedModify )) / frameSpeedModify; 
     
     
     //int animFPS = 30000; // FPS for animation
