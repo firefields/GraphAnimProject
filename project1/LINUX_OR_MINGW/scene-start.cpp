@@ -489,7 +489,7 @@ void drawMesh(SceneObject sceneObj, int id) {
 	if( sceneObj.meshId == 58)
 	{
 	    // Rotate the model around the y axis for guy running in circle 
-	    yAngle = sceneObjs[id].angles[1] += 0.005 * frameSpeedModify * sceneObj.animDir;
+	    yAngle = sceneObjs[id].angles[1] += 0.0005 * frameSpeedModify * abs(sceneObj.animDir);
 	    // Define a new translation position based on the "position" of the model. The position
 	    // is the centre of the circle - so the user moves the centre of rotation for the model
 	    vec4 newPos;
