@@ -793,7 +793,7 @@ static void makeMenu() {
   glutAddSubMenu("Texture",texMenuId); 
   glutAddSubMenu("Ground Texture",groundMenuId); 
   glutAddSubMenu("Lights",lightMenuId); 
-  glutSubMenuEntry("Animation Tools",animationMenuId);
+  glutAddSubMenu("Animation Tools",animationMenuId);
   glutAddMenuEntry("EXIT", 99); 
   glutAttachMenu(GLUT_RIGHT_BUTTON); 
  
