@@ -480,7 +480,7 @@ void drawMesh(SceneObject sceneObj, float elTime) {
 	float periodRot = 180.0 * sceneObj.animSpeed / ( sceneObj.animDist * 3.141593 ); 
 	// period of 1 revolution
 	period = 2.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
-    float modElTime = fmod(elTime,period);
+    double modElTime = fmod(elTime,period);
 	float modifyRot = fmod( modElTime * periodRot, 360.0); // Angle = s * deg/s from 0 to 360
 	// Note here i take the mod of the total time with the period, as otherwise the total
 	// time will begin to dominate the formula and wash out the effect of the rotation term.
