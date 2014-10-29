@@ -1,4 +1,10 @@
- 
+//  CITS3003 Graphics and Animation Project: Part 2
+//  scene-start.cpp
+//
+//  20939143    James Rosher
+//  20947475    Callum Schofield
+
+
 #include "Angel.h" 
  
 #include <stdlib.h> 

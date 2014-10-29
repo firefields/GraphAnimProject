@@ -1,3 +1,10 @@
+//  CITS3003 Graphics and Animation Project: Part 2
+//  vStart.glsl
+//
+//  20939143    James Rosher
+//  20947475    Callum Schofield
+
+
 #version 150
 
 in  vec4 vPosition;
