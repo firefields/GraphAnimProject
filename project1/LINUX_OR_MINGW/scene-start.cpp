@@ -480,7 +480,8 @@ void drawMesh(SceneObject sceneObj, float elTime) {
 	float periodRot = 180.0 * sceneObj.animSpeed / ( sceneObj.animDist * 3.141593 ); 
 	// period of 1 revolution
 	period = 2.0 * 3.141593 * sceneObj.animDist / sceneObj.animSpeed;
-	float modifyRot = fmod( fmod(elTime,period) * periodRot, 360.0); // Angle = s * deg/s from 0 to 360
+    float modElTime = fmod(elTime,period);
+	float modifyRot = fmod( modElTime * periodRot, 360.0); // Angle = s * deg/s from 0 to 360
 	// Note here i take the mod of the total time with the period, as otherwise the total
 	// time will begin to dominate the formula and wash out the effect of the rotation term.
 	// The effect of this is the rotation of the model slowly becomes out of sync with the rotation
@@ -837,8 +838,8 @@ static void makeMenu() {
  // Create a submenu to deal with animations
   int animationMenuId = glutCreateMenu(animationMenu);
   glutAddMenuEntry("Walk Distance/Speed",60);
-  glutAddMenuEntry("On/Off Selected",61);
-  glutAddMenuEntry("On/Off Global",62);
+  glutAddMenuEntry("On/Off - Selected",61);
+  glutAddMenuEntry("On/Off - Global",62);
   glutAddMenuEntry("Animation 1",65);
   glutAddMenuEntry("Animation 2",66);
   //Can add more "Animation X" as required
