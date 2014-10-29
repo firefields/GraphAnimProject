@@ -71,7 +71,7 @@ typedef struct {
     float animDist;	// Sets maximum distance to run
     float animSpeed;	// Sets speed of model
     float texScale; 
-    int animNum;        //Sets Animation Type
+    int animNum;        //Sets the animation frame set used in objects animation
     bool animRun;       //Flag to set animation on and off
 } SceneObject; 
  
@@ -433,6 +433,7 @@ void init( void )
     sceneObjs[4].loc = vec4(-1.0, 0.0, 0.0, 1.0); 
     addObject(58); // add gingerbread man circle path
     sceneObjs[5].loc = vec4(1.0, 0.0, 1.0, 1.0); 
+    animSwitch = true;  //Sets global animation to on.
 
     // We need to enable the depth test to discard fragments that 
     // are behind previously drawn fragments for the same pixel. 
@@ -506,7 +507,11 @@ void drawMesh(SceneObject sceneObj, float elTime) {
     float animFrame = 0.0;
     if(sceneObj.animRun == true)
     {
-        animFrame = (float)(sceneObj.animNum*50 +1) + fmod( 20 * ( 1 + modify ) * period, 40);
+        //Calculate the offset required to access the correct animation frame set. Each set can have 40 frames
+        //and starts on a multiple of 50 + 1 (ie. 1,51,101,151).  This gives a 10 frame buffer between animation
+        //sets to prevent seperate animations being merged together.
+        float animOffset = (float)(sceneObj.animNum*50 + 1);
+        animFrame = animOffset + fmod( 20 * ( 1 + modify ) * period, 40);
     }
     // get boneTransforms for the first (0th) animation at the given time (a float measured in frames)
     mat4 boneTransforms[nBones];     // was: mat4 boneTransforms[mesh->mNumBones];
@@ -754,7 +759,7 @@ static void animationMenu(int id)
     }
     if(id == 62)
     {
-        if(animSwitch == true)          //Triggers for global stae rather than individual object state
+        if(animSwitch == true)                  //Triggers for global stae rather than individual object state
         {
             for(int i = 3; i < nObjects ; i++)  //Itterates through all objects except for ground and lights.
             {
@@ -771,7 +776,7 @@ static void animationMenu(int id)
             animSwitch = true;
         }
     }
-    if(id == 65)
+    if(id == 65)   
     {
         sceneObjs[currObject].animNum = 0;
     }
@@ -830,6 +835,7 @@ static void makeMenu() {
   glutAddMenuEntry("On/Off Global",62);
   glutAddMenuEntry("Animation 1",65);
   glutAddMenuEntry("Animation 2",66);
+  //Can add more "Animation X" as required
  
  
   glutCreateMenu(mainmenu); 
