@@ -81,6 +81,7 @@ SceneObject sceneObjs[maxObjects]; // An array storing the objects currently in 
 int nObjects=0; // How many objects are currenly in the scene. 
 int currObject=-1; // The current object 
 int toolObj = -1;  // The object currently being modified 
+bool animSwitch;    //Global Animation Running State
  
  
 //------------------------------------------------------------ 
@@ -753,9 +754,28 @@ static void animationMenu(int id)
     }
     if(id == 62)
     {
+        if(animSwitch == true)          //Triggers for global stae rather than individual object state
+        {
+            for(int i = 3; i < nObjects ; i++)  //Itterates through all objects except for ground and lights.
+            {
+                sceneObjs[i].animRun = false;
+            }
+            animSwitch = false;
+        }
+        else
+        {
+            for(int i = 3; i < nObjects ; i++)
+            {
+                sceneObjs[i].animRun = true;
+            }
+            animSwitch = true;
+        }
+    }
+    if(id == 65)
+    {
         sceneObjs[currObject].animNum = 0;
     }
-    if(id == 63)
+    if(id == 66)
     {
         sceneObjs[currObject].animNum = 1;
     }
@@ -806,9 +826,10 @@ static void makeMenu() {
  // Create a submenu to deal with animations
   int animationMenuId = glutCreateMenu(animationMenu);
   glutAddMenuEntry("Walk Distance/Speed",60);
-  glutAddMenuEntry("On/Off",61);
-  glutAddMenuEntry("Animation 1",62);
-  glutAddMenuEntry("Animation 2",63);
+  glutAddMenuEntry("On/Off Selected",61);
+  glutAddMenuEntry("On/Off Global",62);
+  glutAddMenuEntry("Animation 1",65);
+  glutAddMenuEntry("Animation 2",66);
  
  
   glutCreateMenu(mainmenu); 
